@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import {useCallback, useEffect, useState} from "react";
 import { addTeam, getTeam, deleteMember, updateMember, getUsersByNickname } from "@/lib/db/admin";
 
 import { ColumnDef } from "@tanstack/react-table";
@@ -58,6 +58,16 @@ export default function TeamPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isEditing, setIsEditing] = useState(false);
 
+    const fetchMembers = async () => {
+        const data = await getTeam();
+        setMembers(data);
+    };
+
+    const fetchUsers = useCallback(() => async () => {
+        const data = await getUsersByNickname(searchTerm);
+        setUsers(data);
+    }, [searchTerm]);
+
     useEffect(() => {
         fetchMembers();
     }, []);
@@ -66,17 +76,9 @@ export default function TeamPage() {
         if (searchTerm) {
             fetchUsers();
         }
-    }, [searchTerm]);
+    }, [fetchUsers, searchTerm]);
 
-    const fetchMembers = async () => {
-        const data = await getTeam();
-        setMembers(data);
-    };
 
-    const fetchUsers = async () => {
-        const data = await getUsersByNickname(searchTerm);
-        setUsers(data);
-    };
 
     const handleAddMember = async () => {
         if (selectedUser) {

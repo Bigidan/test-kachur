@@ -71,7 +71,7 @@ export function HeaderNavigation() {
                         <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                             <li className="row-span-4">
                                 <NavigationMenuLink asChild>
-                                    <a
+                                    <Link
                                         className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
                                         href="/"
                                     >
@@ -80,7 +80,7 @@ export function HeaderNavigation() {
                                         <p className="text-sm leading-tight text-muted-foreground">
                                             Наша команда робить дубляж аніме і не тільки, тому пропонуємо Вам переглянути наші роботи нижче.
                                         </p>
-                                    </a>
+                                    </Link>
                                 </NavigationMenuLink>
                             </li>
                             <ListItem href="/docs" title="Аніме 1">

@@ -19,7 +19,6 @@ const PlayerComponent = () => {
                 );
 
                 if (savedProgress) {
-                    const { timestamp } = JSON.parse(savedProgress);
                     // Вважаємо серію переглянутою, якщо пройдено більше 80% тривалості
                     // Можна додати перевірку на тривалість відео, якщо вона доступна
                     progress[episode.episodeId] = true;

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import {useCallback, useEffect, useState} from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/main/data-table";
 import {
@@ -116,12 +116,7 @@ export default function AnimeGroupPage() {
         }
     };
 
-    useEffect(() => {
-
-        fetchItems();
-    }, [currentTab]);
-
-    const fetchItems = async () => {
+    const fetchItems = useCallback(async () => {
         const config = tabConfigs[currentTab];
         const data = await config.getFunction(); // Тепер TypeScript знає, що це Item[]
 
@@ -130,7 +125,14 @@ export default function AnimeGroupPage() {
             name: item['name']
         }));
         setCurrentItems(formattedData);
-    };
+    }, [currentTab, tabConfigs]);
+    
+    useEffect(() => {
+
+        fetchItems().then(() => {});
+    }, [currentTab, fetchItems]);
+
+
 
     const handleAdd = async () => {
         if (name.trim()) {

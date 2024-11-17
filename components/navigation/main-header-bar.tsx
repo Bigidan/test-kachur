@@ -50,7 +50,7 @@ const MainHeaderBar = async () => {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel className="text-center">Я та моя сім'я</DropdownMenuLabel>
+                            <DropdownMenuLabel className="text-center">Я та моя сім&#39;я</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuGroup>
                                 <DropdownMenuItem>

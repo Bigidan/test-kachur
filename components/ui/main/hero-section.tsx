@@ -27,7 +27,7 @@ export const HeroData: HeroType[] = [
     },
 ];
 
-const HeroSection: React.FC<{ }> = () => {
+const HeroSection: React.FC = () => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
