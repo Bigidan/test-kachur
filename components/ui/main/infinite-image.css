@@ -14,7 +14,7 @@
     align-items: center;
     justify-content: center;
 
-    animation: scroll 20s linear infinite;
+    animation: scroll 50s linear infinite;
 }
 
 .scroll-image {

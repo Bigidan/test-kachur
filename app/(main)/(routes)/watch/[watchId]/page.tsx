@@ -98,7 +98,7 @@ export default async function WatchPage({
                                     <span className="uppercase font-bold">ДОДАТИ В ОБРАНЕ</span>
                                 </Button>
                                 <Button variant="kachurGrad" size="kachurGrad" className="gap-4">
-                                    <img src="/mono.svg" width={47} height={47} alt=""/>
+                                    <Image src="/mono.svg" width={47} height={47} alt=""/>
                                     <span className="font-bold uppercase">Підтримати проєкт</span>
                                 </Button>
                             </div>

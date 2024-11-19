@@ -3,6 +3,7 @@ import ImageCarousel from "@/components/ui/main/image-carousel";
 import {Button} from "@/components/ui/button";
 import Link from "next/link";
 
+import Image from "next/image";
 
 interface HeroImagesProps {
     watchId: number;
@@ -44,11 +45,11 @@ const HeroImages: React.FC<HeroImagesProps>  = ({watchId, imageArray, interval= 
                     <ImageCarousel images={Array.from({ length: imageArray }, (_, i) => `/${id}/${i + 1}.png`)} interval={interval} reverseOrder={reverseOrder}/>
                 </div>
                 <div className="col-start-3 flex flex-col justify-center">
-                    <img src={"/" + id + "/name.png"} alt="" className="self-end" width="130" height="130"/>
+                    <Image src={"/" + id + "/name.png"} alt="" className="self-end" width="130" height="130"/>
                     <h4 className="z-10 w-4/5 self-end text-right text-wrap">{description}</h4>
                     <Link href={`watch/${watchId}`} className="self-end">
                         <Button variant="kachurGrad" size="kachurGrad" className="w-fit self-end gap-9 h-auto mt-5">
-                            <img src="/watch.svg" width={37} height={37} alt="" />
+                            <Image src="/watch.svg" width={37} height={37} alt="" />
                             <span className="text-lg font-black">ДИВИТИСЬ</span>
                             <span className="w-7"></span>
                         </Button>

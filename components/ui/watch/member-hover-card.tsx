@@ -50,7 +50,7 @@ const StaffHoverCard: React.FC<StaffHoverCardProps> = ({ children, memberId, wat
         return () => {
             if (timeoutId) clearTimeout(timeoutId);
         };
-    }, [isHovered, memberId]);
+    }, [isHovered, memberId, watchId]);
 
     return (
         <HoverCard openDelay={300} closeDelay={300}>

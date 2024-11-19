@@ -1,6 +1,8 @@
 "use client"
-import { useEffect, useState, useRef } from 'react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
 import classNames from 'classnames';
+
+import Image from 'next/image';
 
 interface ImageCarouselProps {
     images: string[];
@@ -46,7 +48,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, interval = 3000, 
                 carouselElement.removeEventListener("wheel", handleWheel);
             }
         };
-    }, [orderedImages.length]);
+    }, [handleWheel, orderedImages.length]);
 
     return (
         <div ref={carouselRef} className="carousel-container h-fit">
@@ -57,7 +59,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, interval = 3000, 
                 const isVisible = displayIndex < 4;
 
                 return (
-                    <img
+                    <Image
                         key={index}
                         src={imgSrc}
                         alt={`Image ${index + 1}`}

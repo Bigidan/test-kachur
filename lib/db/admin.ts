@@ -1,14 +1,28 @@
 "use server";
 
-import { db } from "@/lib/db"; // adjust the import path as needed
+import {db} from "@/lib/db"; // adjust the import path as needed
 import {
-    animeAgeTable, animeDubDirectorTable, animeEditingTable, animeEpisodeTable, animeGenreTable, animeSoundTable,
+    animeAgeTable,
+    animeDubDirectorTable,
+    animeEditingTable,
+    animeEpisodeTable,
+    animeGenreTable,
+    animeSoundTable,
     animeSourceTable,
-    animeStatusTable, animeStudioTable, animeTable, animeTranslateTable,
-    animeTypeTable, animeVideoEditingTable, animeVocalsTable, animeVoiceActorsTable, characterTable,
-    directorTable, episodeTable,
+    animeStatusTable,
+    animeStudioTable,
+    animeTable,
+    animeTranslateTable,
+    animeTypeTable,
+    animeVideoEditingTable,
+    animeVocalsTable,
+    animeVoiceActorsTable,
+    characterTable,
+    directorTable,
+    episodeTable,
     genreTable,
-    memberTable, popularityTable,
+    memberTable,
+    popularityTable,
     roleTable,
     userTable
 } from "@/lib/db/schema";
@@ -311,11 +325,9 @@ export async function getAllPopularity() {
 
 // Функція для додавання нової популярності
 export async function addPopularity(popularity: string) {
-    const pop = db.insert(popularityTable).values({
+    return db.insert(popularityTable).values({
         popularity,
-    }).returning({ id: popularityTable.popularityId, popularity: popularityTable.popularity });
-
-    return pop;
+    }).returning({id: popularityTable.popularityId, popularity: popularityTable.popularity});
 }
 
 // Функція для оновлення популярності за її ID
@@ -332,7 +344,7 @@ export async function deletePopularity(popularityId: number) {
 
 
 export async function getAllAnime(): Promise<Anime[]> {
-    const animes = await db.select({
+    return db.select({
         animeId: animeTable.animeId,
         typeId: animeTable.typeId,
 
@@ -353,8 +365,6 @@ export async function getAllAnime(): Promise<Anime[]> {
         trailerLink: animeTable.trailerLink,
         headerImage: animeTable.headerImage,
     }).from(animeTable).leftJoin(animeStatusTable, eq(animeTable.statusId, animeStatusTable.statusId));
-
-    return animes;
 }
 
 // Функція для оновлення аніме
@@ -477,7 +487,7 @@ export async function addEpisodeToAnime(
 ) {
 
     // Додавання нового епізоду
-    const newEpisode = db.insert(episodeTable).values({
+    return db.insert(episodeTable).values({
         name: name,
         number: number,
         opStart: opStart,
@@ -485,9 +495,7 @@ export async function addEpisodeToAnime(
         endStart: endStart,
         endEnd: endEnd,
         cover: cover
-    }).returning({ id: episodeTable.episodeId });
-
-    return newEpisode;
+    }).returning({id: episodeTable.episodeId});
 
 }
 
@@ -567,15 +575,13 @@ export async function addCharacter(
     name: string,
     image: string,
 ) {
-    const character = db.insert(characterTable).values({
+    return db.insert(characterTable).values({
         voiceActorId: voiceActorId,
         animeId: animeId,
         popularityId: popularityId,
         name: name,
         image: image,
-    }).returning({ id: characterTable.characterId });
-
-    return character;
+    }).returning({id: characterTable.characterId});
 }
 
 // Функція для оновлення персонажа за його ID
