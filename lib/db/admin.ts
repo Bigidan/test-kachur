@@ -454,11 +454,9 @@ export async function addAnime(
 
 // Функція для отримання всіх епізодів для певного аніме
 export async function getEpisodesByAnimeId(animeId: number) {
-    const episodes = await db.select().from(episodeTable)
+    return db.select().from(episodeTable)
         .innerJoin(animeEpisodeTable, eq(episodeTable.episodeId, animeEpisodeTable.episodeId))
         .where(eq(animeEpisodeTable.animeId, animeId));
-
-    return episodes;
 }
 
 export async function addEpisode(

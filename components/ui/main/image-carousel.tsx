@@ -1,5 +1,5 @@
 "use client"
-import React, {useEffect, useState, useRef, useCallback} from 'react';
+import React, {useEffect, useState, useRef } from 'react';
 import classNames from 'classnames';
 
 import Image from 'next/image';
@@ -48,7 +48,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, interval = 3000, 
                 carouselElement.removeEventListener("wheel", handleWheel);
             }
         };
-    }, [handleWheel, orderedImages.length]);
+    }, [orderedImages.length]);
 
     return (
         <div ref={carouselRef} className="carousel-container h-fit">

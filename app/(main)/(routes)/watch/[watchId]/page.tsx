@@ -94,7 +94,7 @@ export default async function WatchPage({
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Button size="kachurGrad" className="gap-4">
-                                    <img src="/bookmark.svg" alt=""/>
+                                    <Image src="/bookmark.svg" alt="" width={32} height={32}/>
                                     <span className="uppercase font-bold">ДОДАТИ В ОБРАНЕ</span>
                                 </Button>
                                 <Button variant="kachurGrad" size="kachurGrad" className="gap-4">
