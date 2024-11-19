@@ -15,13 +15,13 @@ import {
     animeTypeTable,
     animeVideoEditingTable,
     animeVocalsTable,
-    animeVoiceActorsTable,
+    animeVoiceActorsTable, characterTable,
     directorTable, episodeTable,
     genreTable,
     memberTable,
     userTable
 } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import {eq, sql} from "drizzle-orm";
 import { hashPassword, verifyPassword } from "@/lib/auth/jwt";
 import {AnimeData} from "@/components/types/anime-types"; // adjust the import path as needed
 
@@ -264,4 +264,16 @@ export async function getAllEpisodesForAnime(searchAnimeId: number){
     }).from(animeEpisodeTable)
         .where(eq(animeEpisodeTable.animeId, searchAnimeId))
         .leftJoin(episodeTable, eq(animeEpisodeTable.episodeId, episodeTable.episodeId))
+}
+
+export async function getCharactersByActorId(searchUserId: number, searchFromAnime: number) {
+    return db.select().from(characterTable)
+        .where(eq(characterTable.voiceActorId, searchUserId))
+        .orderBy(
+            // Спочатку сортуємо, якщо animeId відповідає searchFromAnime
+            sql`CASE WHEN ${characterTable.animeId} = ${searchFromAnime} THEN 0 ELSE 1 END`,
+            // Далі сортуємо за popularityId
+            characterTable.popularityId
+        )
+        .limit(4);
 }

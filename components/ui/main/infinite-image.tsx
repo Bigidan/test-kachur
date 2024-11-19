@@ -1,52 +1,39 @@
 "use client"
 
+import React from 'react';
 
-import React, { useRef, useEffect } from 'react';
+import "./infinite-image.css"
+import Image from "next/image";
 
 interface InfiniteImageScrollProps {
     images: string[]
 }
 
 const InfiniteImageScroll: React.FC<InfiniteImageScrollProps> = ({ images }) => {
-    const containerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const scrollContainer = containerRef.current;
-
-        if (scrollContainer) {
-            const scrollWidth = scrollContainer.scrollWidth;
-            const containerWidth = scrollContainer.clientWidth;
-
-            const scrollImages = () => {
-                if (scrollContainer.scrollLeft < scrollWidth - containerWidth) {
-                    scrollContainer.scrollLeft += 1; // Change speed here
-                } else {
-                    scrollContainer.scrollLeft = 0; // Reset to start
-                }
-            };
-
-            const interval = setInterval(scrollImages, 30); // Adjust interval for speed
-
-            return () => clearInterval(interval); // Cleanup interval on unmount
-        }
-    }, []);
 
     return (
-        <div
-            ref={containerRef}
-            className="imgCont"
-            style={{
-                display: 'flex',
-                overflow: 'hidden',
-                whiteSpace: 'nowrap',
-                width: '100%',
-            }}
-        >
-            {images.concat(images).map((src, index) => (
-                <div key={index}>
-                    <img src={src} alt={`Image ${index}`} className="image"/>
-                </div>
-            ))}
+        <div className="infinite-scroll-container">
+            <div className="infinite-scroll-track">
+                {images.map((src, index) => (
+                    <div key={index} className="scroll-image">
+                        <Image src={src} alt={`Image ${index}`} width={109} height={100}/>
+                    </div>
+                ))}
+            </div>
+            <div className="infinite-scroll-track" aria-hidden="true">
+                {images.map((src, index) => (
+                    <div key={index} className="scroll-image">
+                        <Image src={src} alt={`Image ${index}`} width={109} height={100}/>
+                    </div>
+                ))}
+            </div>
+            <div className="infinite-scroll-track" aria-hidden="true">
+                {images.map((src, index) => (
+                    <div key={index} className="scroll-image">
+                        <Image src={src} alt={`Image ${index}`} width={109} height={100}/>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };

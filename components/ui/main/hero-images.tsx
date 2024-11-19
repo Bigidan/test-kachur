@@ -5,6 +5,7 @@ import Link from "next/link";
 
 
 interface HeroImagesProps {
+    watchId: number;
     imageArray: number;
     interval?: number;
     reverseOrder?: boolean;
@@ -13,7 +14,7 @@ interface HeroImagesProps {
     description: string;
 }
 
-const HeroImages: React.FC<HeroImagesProps>  = ({imageArray, interval= 3000, reverseOrder = true,  videoSrc, id, description}) => {
+const HeroImages: React.FC<HeroImagesProps>  = ({watchId, imageArray, interval= 3000, reverseOrder = true,  videoSrc, id, description}) => {
     const videoRef = useRef<HTMLVideoElement | null>(null);  // Тип для відео
 
     useEffect(() => {
@@ -33,6 +34,7 @@ const HeroImages: React.FC<HeroImagesProps>  = ({imageArray, interval= 3000, rev
         return () => observer.disconnect();
     }, []);
 
+
     return (
         <div className="h-full relative overflow-hidden bg-background/80
           grid grid-cols-5 items-center justify-around w-screen">
@@ -44,7 +46,7 @@ const HeroImages: React.FC<HeroImagesProps>  = ({imageArray, interval= 3000, rev
                 <div className="col-start-3 flex flex-col justify-center">
                     <img src={"/" + id + "/name.png"} alt="" className="self-end" width="130" height="130"/>
                     <h4 className="z-10 w-4/5 self-end text-right text-wrap">{description}</h4>
-                    <Link href="watch" className="self-end">
+                    <Link href={`watch/${watchId}`} className="self-end">
                         <Button variant="kachurGrad" size="kachurGrad" className="w-fit self-end gap-9 h-auto mt-5">
                             <img src="/watch.svg" width={37} height={37} alt="" />
                             <span className="text-lg font-black">ДИВИТИСЬ</span>
@@ -62,7 +64,7 @@ const HeroImages: React.FC<HeroImagesProps>  = ({imageArray, interval= 3000, rev
             </div>
 
             <video ref={videoRef} loop muted
-                   className="col-span-5 absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden max-w-fit">
+                   className="col-span-5 absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden max-w-full w-full">
                 <source src={videoSrc}/>
             </video>
         </div>

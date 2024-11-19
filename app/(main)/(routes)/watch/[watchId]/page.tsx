@@ -8,37 +8,33 @@ import PlayerComponent from "@/components/player/player-component";
 
 import {AnimeData} from "@/components/types/anime-types";
 import {getAllAnimeData} from "@/lib/db/userDB";
+import Image from "next/image";
+import StaffHoverCard from "@/components/ui/watch/member-hover-card";
+
 
 
 
 export default async function WatchPage({
-                                            params,
-                                        }: {
+    params,
+}: {
     params: Promise<{ watchId: string }>
 }){
 
-    const watchId = (await params).watchId
-
+    const watchId = (await params).watchId;
     if (isNaN(Number(watchId))) return;
 
-
-
-    const animeFetch: Promise<AnimeData> = getAllAnimeData(Number(watchId));
-
-
-
-    const data = await Promise.all([animeFetch]);
-
-    const animeDataEx = data[0].anime;
-    const animeGenres = data[0].genres;
-    const animeTranslate = data[0].translate;
-    const animeEditing = data[0].editing;
-    const animeSound = data[0].sound;
-    const animeVideoEditing = data[0].videoEditing;
-    const animeDubDirector = data[0].dubDirector;
-    const animeVocals = data[0].vocals;
-    const animeVoiceActors = data[0].voiceActors;
-    // const router = useRouter();
+    const animeData: AnimeData = await getAllAnimeData(Number(watchId));
+    const {
+        anime: animeDataEx,
+        genres: animeGenres,
+        translate: animeTranslate,
+        editing: animeEditing,
+        sound: animeSound,
+        videoEditing: animeVideoEditing,
+        dubDirector: animeDubDirector,
+        vocals: animeVocals,
+        voiceActors: animeVoiceActors,
+    } = animeData;
 
     const formatDateToString = (date: Date): string => {
         const day = String(date.getDate()).padStart(2, '0');
@@ -47,32 +43,36 @@ export default async function WatchPage({
         return `${day}${month}${year}`;
     };
 
-    // Sample data
-    // const animeData = {
-    //     titleUkr: 'ДанДаДан',
-    //     titleJap: 'Dandadan',
-    //     titleEng: 'ダンダダン',
-    //     status: 'Онгоїнґ',
-    //     episodes: {now: '4', all: '12'},
-    //     rating: 'IMDB: 8.6 (4 200)',
-    //     type: 'ТБ-серіал',
-    //     genres: ['Комедія', 'Надприродне', 'Шонен', 'Екшн', 'Романтика', 'Наукова фантастика', 'Бойовик', 'Школа'],
-    //     source: 'Манґа',
-    //     releaseDate: '4 жовтня 2024 року',
-    //     description: `Після того, як Момо Аясе кинув її хлопець, вона починає дутися, коли натрапляє на хлопчика, над яким знущаються однокласники. Врятований її необдуманою добротою, одержимий інопланетянами хлопчик намагається заговорити з нею про позаземні інтереси, які, на його думку, вони поділяють. Відкинувши його твердження, Аясе проголошує, що вона натомість вірить у привидів, і між ними починається суперечка про те, хто з них вірить у видумане, а хто - в реальне.\n\nПосперечавшись, вони вирішують окремо відвідати місця, пов'язані з позаземним і надприродним: Аясе - з першим, а хлопчик - з другим. Коли вони досягають своїх місць, виявляється, що жоден з них не помилявся, і що як прибульці, так і привиди дійсно існують.\n\nЦе знаменує початок пригод Аясе та хлопчини, які намагаються виправити сюрреалістичні, надприродні та позаземні елементи, що оточують їх, щоб повернутися до нормального життя.`,
-    //     age: '18+',
-    //     studio: 'Science SARU',
-    //     director: ['Ямашіро Фуґа'],
-    //     translate: ['Рустам Ткаченко'],
-    //     editing: ['KORGIK', 'Lem0nka'],
-    //     sound: ['EchoSol', 'Dofin'],
-    //     videoEditing: ['Rubycoon', 'Богом Даний'],
-    //     dubDirector: ['KORGIK', 'Lem0nka', 'EchoSol'],
-    //     vocals: ['Snail'],
-    //     voiceActors: ['vgvoice', 'SA10', 'Anyonkopon', 'Cara Linne', 'Seraphine', 'KORGIK', 'CherryDub', 'Good_Zik', 'Sad._.Burrito', 'EchoSol', 'Basilio', 'михайлістви', 'AlioniX', 'ArtCl0ud', 'Snail', 'Роман', 'Dumbest', 'Хриня', 'Ro', 'Тріна Дубовицька'],
-    //     trailerLink: 'tCeaizw7oIs',
-    // };
+    // const [hoveredActor, setHoveredActor] = useState<string | null>(null);
 
+    interface StaffListProps {
+        title: string;
+        staff: {
+            memberNickname: string | null;
+            memberName: string | null;
+            memberId: number | null;
+            userId: number | null;
+        }[];
+    }
+    const StaffList = ({ title, staff }: StaffListProps) => {
+        if (!staff.length) return null;
+
+        return (
+            <div>
+                <span>{title}</span>
+                <span className="row_v gap-1">
+            {staff.map((member, index) => (
+                <StaffHoverCard key={index} memberId={member.memberId} watchId={Number(watchId)}>
+                    <span className="actor-item">
+                        {member.memberNickname}
+                        {index < staff.length - 1 && ', '}
+                    </span>
+                </StaffHoverCard>
+            ))}
+            </span>
+            </div>
+        );
+    };
 
 
     return (
@@ -158,7 +158,6 @@ export default async function WatchPage({
                                 <span className="row_v">{animeDataEx[0].studioName}</span>
                             </div>
 
-
                             <div >
                                 <span>Режисер</span>
                                 <span className="row_v gap-1">
@@ -173,91 +172,15 @@ export default async function WatchPage({
                                 <span>Озвучення</span>
                                 <span className="row_v gap-1">Студія Качур</span>
                             </div>
-                            <div >
-                                <span>Переклад</span>
-                                <span className="row_v gap-1">
-                                    {animeTranslate.map((actor, index) => (
-                                        <span key={index} data-link={actor} className="actor-item">
-                                            {actor.memberNickname}
-                                            {index < animeTranslate.length - 1 && ', '}
-                                        </span>
-                                    ))}
-                                </span>
-                            </div>
-                            <div >
-                                <span>Редактура</span>
-                                <span className="row_v gap-1">
-                                    {animeEditing.map((actor, index) => (
-                                        <span key={index} data-link={actor} className="actor-item">
-                                            {actor.memberNickname}
-                                            {index < animeEditing.length - 1 && ', '}
-                                        </span>
-                                    ))}
-                                </span>
-                            </div>
-                            <div >
-                                <span>Саунд-дизайн та зведення</span>
-                                <span className="row_v gap-1">
-                                    {animeSound.map((actor, index) => (
-                                        <span key={index} data-link={actor} className="actor-item">
-                                            {actor.memberNickname}
-                                            {index < animeSound.length - 1 && ', '}
-                                        </span>
-                                    ))}
-                                </span>
-                            </div>
-                            {animeVideoEditing.length > 0 ? <div>
-                                <span>Візуальний ряд</span>
-                                <span className="row_v gap-1">
-                                    {animeVideoEditing.map((actor, index) => (
-                                        <span key={index} data-link={actor} className="actor-item">
-                                            {actor.memberNickname}
-                                            {index < animeVideoEditing.length - 1 && ', '}
-                                        </span>
-                                    ))}
-                                </span>
-                            </div>
-                                :
-                            null
-                            }
 
-                            <div>
-                                <span>Режисери дубляжу</span>
-                                <span className="row_v gap-1">
-                                    {animeDubDirector.map((actor, index) => (
-                                        <span key={index} data-link={actor} className="actor-item">
-                                            {actor.memberNickname}
-                                            {index < animeDubDirector.length - 1 && ', '}
-                                        </span>
-                                    ))}
-                                </span>
-                            </div>
-                            {animeVocals.length > 0 ? <div>
-                                <span>Вокал</span>
-                                <span className="row_v gap-1">
-                                    {animeVocals.map((actor, index) => (
-                                        <span key={index} data-link={actor} className="actor-item">
-                                            {actor.memberNickname}
-                                            {index < animeVocals.length - 1 && ', '}
-                                        </span>
-                                    ))}
-                                </span>
-                            </div>
-                            :
-                            null
-                            }
+                            <StaffList title="Переклад" staff={animeTranslate}/>
+                            <StaffList title="Редактура" staff={animeEditing}/>
+                            <StaffList title="Саунд-дизайн та зведення" staff={animeSound}/>
+                            <StaffList title="Візуальний ряд" staff={animeVideoEditing}/>
+                            <StaffList title="Режисери дубляжу" staff={animeDubDirector}/>
+                            <StaffList title="Вокал" staff={animeVocals}/>
+                            <StaffList title="Актори озвучення" staff={animeVoiceActors}/>
 
-                            <div>
-                                <span>Актори озвучення</span>
-                                <span className="row_v gap-1">
-                                    {animeVoiceActors.map((actor, index) => (
-                                        <span key={index} data-link={actor} className="actor-item">
-                                            {actor.memberNickname}
-                                            {index < animeVoiceActors.length - 1 && ', '}
-                                        </span>
-                                    ))}
-                                </span>
-                            </div>
 
                         </div>
 
@@ -279,7 +202,7 @@ export default async function WatchPage({
                                         referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
                             </div>
                             <Button variant="kachurGrad" size="kachurGrad" className="gap-4">
-                                <img src="/watch.svg" width={37} height={37} alt=""/>
+                                <Image src="/watch.svg" width={37} height={37} alt=""/>
                                 <span className="font-bold uppercase">дивитися трейлер українською</span>
                             </Button>
                         </div>

@@ -1,0 +1,69 @@
+.watch svg {
+    width: auto !important;
+    height: auto !important;
+}
+
+
+.episode-button {
+    position: relative;
+    z-index: 3;
+}
+
+.episode-button::before {
+    content: '';
+    position: absolute;
+    z-index: -3;
+
+    top: 50%;
+    left: 50%;
+
+    width: 103%;
+    height: 108%;
+
+    border-radius: 6px;
+
+    transform: translate(-50%, -50%);
+
+    background-color: transparent;
+    background-repeat: no-repeat;
+
+    background-image: linear-gradient(#DE0000, #7C0000);
+    animation: rotate 4s linear infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.episode-button::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background: #27272a;
+    border-radius: inherit;
+}
+
+.episode-button.active::before {
+    opacity: 1;
+}
+
+/*@keyframes rotate {*/
+/*    100% {*/
+/*        transform: rotate(1turn);*/
+/*    }*/
+/*}*/
+
+/* Додаємо світіння для активного стану */
+.episode-button.active {
+    box-shadow: 0 0 10px #7C0000;
+}
+
+/* Додаткові стилі для hover ефекту */
+.episode-button:hover::before {
+    opacity: 0.7;
+}

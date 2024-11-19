@@ -1,6 +1,6 @@
 "use client"
 // context/PlayerContext.js
-import {createContext, useCallback, useContext, useEffect, useState} from 'react';
+import React, {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {Episode, EpisodeService} from "@/lib/db/episode-service";
 
 interface PlayerContextType {
@@ -47,7 +47,7 @@ export const PlayerProvider = ({
 
     const [autoplayEnabled, setAutoplayEnabled] = useState(true);
 
-    const episodeService = new EpisodeService();
+    const episodeService = useMemo(() => new EpisodeService(), []);
 
     const playVideo = (video: string) => {
         setCurrentVideo(video);
@@ -60,7 +60,7 @@ export const PlayerProvider = ({
         if (watchId) {
             episodeService.saveProgress(watchId, episode.episodeId);
         }
-    }, [watchId]);
+    }, [episodeService, watchId]);
 
     const playNextEpisode = useCallback(() => {
         if (!currentEpisode || !autoplayEnabled) return;
@@ -77,7 +77,7 @@ export const PlayerProvider = ({
         setAutoplayEnabled(checked);
     };
 
-    const loadEpisodes = async (animeId: string) => {
+    const loadEpisodes = useCallback(async (animeId: string) => {
         const fetchedEpisodes = await episodeService.getEpisodesByAnimeId(animeId);
         setEpisodes(fetchedEpisodes);
 
@@ -91,14 +91,14 @@ export const PlayerProvider = ({
             // Якщо немає збереженого прогресу, починаємо з першої серії
             playEpisode(fetchedEpisodes[0]);
         }
-    };
+    }, [episodeService, playEpisode]);
 
     useEffect(() => {
         if (watchId) {
             loadEpisodes(watchId);
         }
 
-    }, [watchId]);
+    }, [loadEpisodes, watchId]);
 
     return (
         <PlayerContext.Provider

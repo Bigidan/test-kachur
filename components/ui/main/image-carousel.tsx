@@ -23,6 +23,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, interval = 3000, 
     }, [orderedImages.length, interval]);
 
     const handleWheel = (event: WheelEvent) => {
+        event.preventDefault();
         setCurrentIndex((prevIndex) => {
             if (event.deltaY > 0) {
                 // Scroll down, go to the next image

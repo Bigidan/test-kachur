@@ -12,7 +12,6 @@ export default function Home() {
       <div>
           <div className="hero h-full w-full overflow-hidden flex">
               <HeroSection />
-              {/* Додайте більше HeroSection за потреби */}
           </div>
           <div className="hero">
 

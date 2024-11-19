@@ -19,6 +19,7 @@ interface VideoProgress {
     watchId: string;
     episodeId: string;
     timestamp: number;
+    isWatched: boolean;
 }
 
 const Player = () => {
@@ -60,6 +61,7 @@ const Player = () => {
             watchId: watchId,
             episodeId: currentEpisode.episodeId,
             timestamp: videoRef.current.currentTime,
+            isWatched: true,
         };
 
         localStorage.setItem(
@@ -406,10 +408,10 @@ const Player = () => {
 
 
     return (
-        <div className="w-full aspect-video video_container paused" ref={controlsRef}>
+        <div className="w-full aspect-video video_container paused" data-volume="up" ref={controlsRef}>
 
             <div className="absolute left-0 right-0 bottom-0 top-0 episodePlayerName">
-                <p className="p-6 relative z-[2]">{currentEpisode?.episodeNumber}. {currentEpisode?.episodeName}</p>
+                <p className="p-6 relative z-[2]">{currentEpisode?.episodeNumber || "Назва серії"}. {currentEpisode?.episodeName}</p>
             </div>
 
 
@@ -458,9 +460,9 @@ const Player = () => {
                     </div>
 
                     <div className="flex align-items-center gap-1 flex-grow text-sm">
-                        <div>{currentTime}</div>
+                        <div>{currentTime || "00:00"}</div>
                         /
-                        <div>{duration}</div>
+                        <div>{duration || "00:00"}</div>
                     </div>
 
                     <Button variant="link" size="icon">
