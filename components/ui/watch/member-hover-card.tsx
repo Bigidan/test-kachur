@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getCharactersByActorId } from "@/lib/db/userDB"; // Припустимо, що у вас є така функція
 
 interface StaffHoverCardProps {
