@@ -17,6 +17,7 @@ export type Anime = {
     description: string | null;
     trailerLink: string | null;
     headerImage: string | null;
+    shortDescription: string | null;
 };
 
 export type AnimeType = {
@@ -102,7 +103,6 @@ export interface AnimeData {
         directorName: string | null,
         trailerLink: string | null,
         headerImage: string | null;
-
 
         existedEpisodes: number,
     }[];

@@ -47,6 +47,7 @@ export const animeTable = sqliteTable('anime', {
     description: text('description'),
     trailerLink: text('trailer_link'),
     headerImage: text('header_image'),
+    shortDescription: text('short_description'),
 });
 
 export const genreTable = sqliteTable('genre', {

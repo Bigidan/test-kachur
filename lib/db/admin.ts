@@ -364,6 +364,7 @@ export async function getAllAnime(): Promise<Anime[]> {
         description: animeTable.description,
         trailerLink: animeTable.trailerLink,
         headerImage: animeTable.headerImage,
+        shortDescription: animeTable.shortDescription,
     }).from(animeTable).leftJoin(animeStatusTable, eq(animeTable.statusId, animeStatusTable.statusId));
 }
 
@@ -385,6 +386,7 @@ export async function updateAnime(
     description: string,
     trailerLink: string,
     headerImage: string,
+    shortDescription: string,
 ): Promise<void> {
     await db.update(animeTable)
         .set({
@@ -403,6 +405,7 @@ export async function updateAnime(
             description,
             trailerLink,
             headerImage,
+            shortDescription,
         })
         .where(eq(animeTable.animeId, animeId));
 }
@@ -429,6 +432,7 @@ export async function addAnime(
     description: string,
     trailerLink: string,
     headerImage: string,
+    shortDescription: string,
 ): Promise<void> {
     await db.insert(animeTable).values({
         typeId: typeId,
@@ -446,6 +450,7 @@ export async function addAnime(
         description: description,
         trailerLink: trailerLink,
         headerImage: headerImage,
+        shortDescription: shortDescription,
     })
 }
 
@@ -782,6 +787,7 @@ export async function getAllAnimeData() {
             description: animeTable.description,
             trailerLink: animeTable.trailerLink,
             headerImage: animeTable.headerImage,
+            shortDescription: animeTable.shortDescription,
 
         }).from(animeTable).leftJoin(animeStatusTable, eq(animeTable.statusId, animeStatusTable.statusId)),
 

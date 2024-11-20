@@ -193,6 +193,7 @@ export default function AnimePage() {
                 formData.description || "",
                 formData.trailerLink || "",
                 formData.headerImage || "",
+                formData.shortDescription || "",
             );
 
             await fetchAnimes();
@@ -224,6 +225,7 @@ export default function AnimePage() {
                 formData.description || "",
                 formData.trailerLink || "",
                 formData.headerImage || "",
+                formData.shortDescription || "",
             );
 
             await fetchAnimes();
@@ -884,6 +886,19 @@ export default function AnimePage() {
                                         onChange={(e) => setFormData({...formData, description: e.target.value})}
                                         className="col-span-3"/>
                                 </div>
+
+                                <div>
+                                    <Label htmlFor="description" className="text-right">
+                                        Короткий опис
+                                    </Label>
+                                    <Textarea
+                                        id="description"
+                                        value={formData.shortDescription || ""}
+                                        onChange={(e) => setFormData({...formData, shortDescription: e.target.value})}
+                                        className="col-span-3"/>
+                                </div>
+
+
                                 <div>
                                     <Label htmlFor="trailerLink" className="text-right">
                                         Трейлер
@@ -1298,7 +1313,7 @@ export default function AnimePage() {
                             </InputOTP>
                         </div>
 
-                        <div >
+                        <div>
                             <Label htmlFor="description" className="text-right">
                                 Опис
                             </Label>
@@ -1308,7 +1323,19 @@ export default function AnimePage() {
                                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                                 className="col-span-3"/>
                         </div>
-                        <div >
+
+                        <div>
+                            <Label htmlFor="description" className="text-right">
+                                Короткий опис
+                            </Label>
+                            <Textarea
+                                id="description"
+                                value={formData.shortDescription || ""}
+                                onChange={(e) => setFormData({...formData, shortDescription: e.target.value})}
+                                className="col-span-3"/>
+                        </div>
+
+                        <div>
                             <Label htmlFor="trailerLink" className="text-right">
                                 Трейлер
                             </Label>
@@ -1319,7 +1346,7 @@ export default function AnimePage() {
                                 className="col-span-3"
                             />
                         </div>
-                        <div >
+                        <div>
                             <Label htmlFor="headerImage" className="text-right">
                                 Зображення
                             </Label>
