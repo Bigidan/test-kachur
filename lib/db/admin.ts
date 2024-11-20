@@ -81,13 +81,27 @@ export async function deleteRole(roleId: number) {
 
 
 
-// Функція для отримання користувачів з пагінацією
-export async function getUsersWithPagination(limit: number = 20, offset: number = 0) {
-    return db
-        .select()
-        .from(userTable)
-        .limit(limit)
-        .offset(offset);
+export async function getUsersWithPagination(page: number = 1, pageSize: number = 20) {
+    const offset = (page - 1) * pageSize;
+
+    const [users, totalUsersCount] = await Promise.all([
+        db
+            .select()
+            .from(userTable)
+            .limit(pageSize)
+            .offset(offset),
+        db
+            .select({ count: db.$count(userTable) })
+            .from(userTable)
+            .then(result => result[0].count)
+    ]);
+
+    return {
+        users,
+        totalPages: Math.ceil(totalUsersCount / pageSize),
+        currentPage: page,
+        totalUsers: totalUsersCount
+    };
 }
 
 // Функція для оновлення користувача

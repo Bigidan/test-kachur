@@ -161,10 +161,9 @@ export default function PopularityPage() {
                     <DialogContent className="sm:max-w-[625px]">
                         <DialogHeader>
                             <DialogTitle>Редагування популярності</DialogTitle>
-                            <DialogDescription>
-                                Введіть нову популярність.
-                            </DialogDescription>
+                            <DialogDescription>Введіть нову популярність.</DialogDescription>
                         </DialogHeader>
+
                         <div className="grid gap-4 py-4">
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="editPopularity" className="text-right">

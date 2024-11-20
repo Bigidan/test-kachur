@@ -34,6 +34,7 @@ const StaffHoverCard: React.FC<StaffHoverCardProps> = ({ children, memberId, wat
                 try {
                     const data = await getCharactersByActorId(memberId, Number(watchId));
                     setProfileData(data);
+                    console.log(data);
                 } catch (error) {
                     console.error("Error fetching profile data:", error);
                     setProfileData(null);
@@ -60,21 +61,22 @@ const StaffHoverCard: React.FC<StaffHoverCardProps> = ({ children, memberId, wat
             >
                 {children}
             </HoverCardTrigger>
-            <HoverCardContent className="w-80">
+            <HoverCardContent className="w-full">
                 {loading ? (
-                    <div className="flex items-center justify-center">
+                    <div className="flex items-center justify-start">
                         Завантаження...
                     </div>
                 ) : profileData && profileData[0] ? (
                     <div className="flex space-x-4">
-                        <Avatar>
-                            <AvatarImage src={profileData[0].image || "d"} alt={String(profileData[0].characterId) || "d"} />
-                            <AvatarFallback>{profileData[0].name?.[0] || 'A'}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <h4 className="text-sm font-semibold">{profileData[0].name}</h4>
-                            <p className="text-xs text-muted-foreground">{profileData[0].popularityId}</p>
-                        </div>
+                        {profileData.map((profile: ProfileType) => (
+                            <div key={profile.characterId} className="flex flex-col items-center justify-end w-32">
+                                <img src={profile.image || ""} alt={profile.name} width="100px" height="133px" style={{ objectFit: "cover", aspectRatio: 9 / 12 }} />
+                                <div>
+                                    <h4 className="text-sm font-semibold">{profile.name}</h4>
+                                </div>
+                            </div>
+                        ))}
+
                     </div>
                 ) : (
                     <div className="text-sm text-muted-foreground">

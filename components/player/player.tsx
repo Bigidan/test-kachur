@@ -469,7 +469,7 @@ const Player = () => {
                         <Image width={60} height={35} src="/duck.svg" alt="" className="DuckBtn"/>
                     </Button>
 
-                    <div className="flex align-items-center">
+                    <div className="flex align-items-center px-1">
                         <Switch
                             className="AutoPlayNextBtn"
                             checked={autoplayEnabled} onCheckedChange={toggleAutoplay}

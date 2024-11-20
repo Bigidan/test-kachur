@@ -41,6 +41,16 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination"
+
 type User = {
     userId: number;
     roleId: number | null;
@@ -62,6 +72,11 @@ export default function UserPage() {
     const [roles, setRoles] = useState<Role[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Стани для пагінації
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [pageSize, setPageSize] = useState(20); // Кількість елементів на сторінці
+
     // Стани для форми редагування
     const [isEditing, setIsEditing] = useState(false);
     const [editingUserId, setEditingUserId] = useState<number | null>(null);
@@ -76,19 +91,51 @@ export default function UserPage() {
     const [openRoleSelect, setOpenRoleSelect] = useState(false);
 
     useEffect(() => {
-        fetchUsers();
+        fetchUsers(currentPage, pageSize);
         fetchRoles();
-    }, []);
+    }, [currentPage, pageSize]);
 
-    const fetchUsers = async () => {
-        const data = await getUsersWithPagination();
-        setUsers(data);
+    // Оновлена функція завантаження користувачів
+    const fetchUsers = async (page: number, pageSize: number) => {
+        try {
+            const response = await getUsersWithPagination(page, pageSize);
+            setUsers(response.users);
+            setTotalPages(response.totalPages);
+        } catch (error) {
+            console.error("Помилка при завантаженні користувачів:", error);
+        }
     };
 
     const fetchRoles = async () => {
         const data = await getAllRoles();
         setRoles(data);
     };
+
+    // Функції для навігації по сторінках
+    const handlePageChange = (page: number) => {
+        if (page > 0 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
+
+    // Генерація масиву сторінок для відображення
+    const generatePageNumbers = () => {
+        const pages = [];
+        const maxPagesToShow = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+        const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+        if (endPage - startPage + 1 < maxPagesToShow) {
+            startPage = Math.max(1, endPage - maxPagesToShow + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(i);
+        }
+
+        return pages;
+    };
+
 
     const handleUpdateUser = async () => {
         if (!selectedRole || !editingUserId) return;
@@ -109,7 +156,7 @@ export default function UserPage() {
                 dataToUpdate.autoSkip,
             );
 
-            await fetchUsers();
+            await fetchUsers(currentPage, pageSize);
             resetForm();
         } catch (error) {
             console.error("Помилка при оновленні користувача:", error);
@@ -120,7 +167,9 @@ export default function UserPage() {
     const handleDeleteUser = async (userId: number) => {
         try {
             await deleteUser(userId);
-            await fetchUsers();
+
+            // Перезавантаження поточної сторінки
+            await fetchUsers(currentPage, pageSize);
         } catch (error) {
             console.error("Помилка при видаленні користувача:", error);
             alert("Помилка при видаленні користувача");
@@ -219,6 +268,28 @@ export default function UserPage() {
         },
     ];
 
+    const frameworks = [
+        {
+            value: "10",
+            label: "10",
+        },
+        {
+            value: "20",
+            label: "20",
+        },
+        {
+            value: "30",
+            label: "30",
+        },
+        {
+            value: "40",
+            label: "40",
+        },
+    ]
+
+    const [open, setOpen] = useState(false)
+    const [value, setValue] = useState("20")
+
     return (
         <div className="w-full flex flex-col space-x-3 p-4">
             <div className="flex items-center mb-4 space-x-5 p-4">
@@ -232,6 +303,51 @@ export default function UserPage() {
                     onChange={(event) => setSearchQuery(event.target.value)}
                     className="max-w-sm"
                 />
+
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={open}
+                            className="w-[200px] justify-between"
+                        >
+                            {value
+                                ? frameworks.find((framework) => framework.value === value)?.label
+                                : "Кількість користувачів на сторінку..."}
+                            <ChevronsUpDown className="opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0">
+                        <Command>
+                            <CommandInput placeholder="Search framework..." />
+                            <CommandList>
+                                <CommandEmpty>Не обрано....</CommandEmpty>
+                                <CommandGroup>
+                                    {frameworks.map((framework) => (
+                                        <CommandItem
+                                            key={framework.value}
+                                            value={framework.value}
+                                            onSelect={(currentValue) => {
+                                                setValue(currentValue === value ? "" : currentValue);
+                                                setPageSize(currentValue === value ? 20 : Number(currentValue));
+                                                setOpen(false);
+                                            }}
+                                        >
+                                            {framework.label}
+                                            <Check
+                                                className={cn(
+                                                    "ml-auto",
+                                                    value === framework.value ? "opacity-100" : "opacity-0"
+                                                )}
+                                            />
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
             </div>
 
             <DataTable
@@ -242,6 +358,37 @@ export default function UserPage() {
                     user.email.toLowerCase().includes(searchQuery.toLowerCase())
                 )}
             />
+
+            <Pagination>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            isActive={currentPage === 1}
+                        />
+                    </PaginationItem>
+                    {generatePageNumbers().map(page => (
+                        <PaginationItem key={page}>
+                            <PaginationLink
+                                href="#"
+                                onClick={() => handlePageChange(page)}
+                                isActive={page === currentPage}
+                            >
+                                {page}
+                            </PaginationLink>
+                        </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                        <PaginationEllipsis />
+                    </PaginationItem>
+                    <PaginationItem>
+                        <PaginationNext
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            isActive={currentPage === totalPages}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
 
             <Dialog open={isEditing} onOpenChange={(open) => !open && resetForm()}>
                 <DialogContent className="sm:max-w-[425px]">

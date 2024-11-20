@@ -42,7 +42,9 @@ export default function CharacterList() {
     const [image, setImage] = useState("");
     const [addedCharacterId, setAddedCharacterId] = useState<number>(0);
     const [searchQuery, setSearchQuery] = useState("");
+
     const [editCharacterId, setEditCharacterId] = useState<number | null>(null);
+
     const [editName, setEditName] = useState("");
     const [editImage, setEditImage] = useState("");
 
@@ -162,8 +164,11 @@ export default function CharacterList() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => {
+                            <DropdownMenuItem
+                                onClick={() => {
+                                console.log(editCharacterId);
                                 setEditCharacterId(character.characterId);
+
                                 setEditName(character.name);
                                 setEditImage(character.image || "");
 
@@ -176,7 +181,8 @@ export default function CharacterList() {
                                 const selectedVoiceActorL = voiceActorList.find(VA => VA.memberId === character.voiceActorId);
                                 setSelectedVoiceActor(selectedVoiceActorL ? [selectedVoiceActorL] : null);
 
-                            }}>Редагувати</DropdownMenuItem>
+                            }}
+                            >Редагувати</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-red-900" onClick={() => handleDeleteCharacter(character.characterId)}>Видалити</DropdownMenuItem>
                         </DropdownMenuContent>
@@ -190,22 +196,36 @@ export default function CharacterList() {
         <div className="w-full flex flex-col space-x-3 p-4">
             <div className="flex items-center mb-4 space-x-5 p-4">
                 <h1>Сторінка персонажів</h1>
+
                 <Dialog open={editCharacterId !== null} onOpenChange={(open) => { if (!open) setEditCharacterId(null); }}>
                     <DialogContent className="sm:max-w-[625px]">
-                        <DialogHeader><DialogTitle>Додавання персонажа</DialogTitle><DialogDescription>Введіть
-                            інформацію про нового персонажа.</DialogDescription></DialogHeader>
+                        <DialogHeader>
+                            <DialogTitle>Редагування персонажів</DialogTitle>
+                            <DialogDescription>Введіть інформацію про нового персонажа.</DialogDescription>
+                        </DialogHeader>
 
-                        <div className="grid gap-4 py-4 animeDialog">
-                            <div className="">
-                                <Label htmlFor="name">Ім&#39;я</Label>
-                                <Input id="name" value={editName} onChange={(e) => setName(e.target.value)}
-                                       className="col-span-3"/>
-                                <Label htmlFor="image">Зображення</Label>
-                                <Input id="image" value={editImage} onChange={(e) => setImage(e.target.value)}
-                                       className="col-span-3"/>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+
+                                <Label htmlFor="editName"  className="text-right">Ім&#39;я</Label>
+                                <Input id="editName"
+                                       value={editName}
+                                       onChange={(e) => setEditName(e.target.value)}
+                                       className="col-span-3"
+                                />
+
+
+                                <Label htmlFor="editImage" className="text-right">Зображення</Label>
+                                <Input
+                                    id="editImage"
+                                    value={editImage}
+                                    onChange={(e) => setEditImage(e.target.value)}
+                                    className="col-span-3"
+                                />
+
                             </div>
 
-                            <div>
+                            <div  className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="anime" className="text-right">
                                     Аніме
                                 </Label>
@@ -242,7 +262,7 @@ export default function CharacterList() {
                             </div>
 
                             {/* Popularity dropdown */}
-                            <div>
+                            <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="popularity" className="text-right">Популярність</Label>
                                 <div className="col-span-3">
                                     <Popover>
@@ -277,7 +297,7 @@ export default function CharacterList() {
                             </div>
 
                             {/* Voice Actor dropdown */}
-                            <div>
+                            <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="voiceActor" className="text-right">Актор голосу</Label>
                                 <div className="col-span-3">
                                     <Popover>
@@ -318,7 +338,6 @@ export default function CharacterList() {
                         <DialogFooter>
                             <Button type="button" onClick={handleEditCharacter}>Застосувати</Button>
                         </DialogFooter>
-                        {addedCharacterId && (<p>Персонаж успішно додано з ID: {addedCharacterId}</p>)}
                     </DialogContent>
                 </Dialog>
 
