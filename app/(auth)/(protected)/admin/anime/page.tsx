@@ -1335,6 +1335,7 @@ export default function AnimePage() {
                                 className="col-span-3"/>
                         </div>
 
+
                         <div>
                             <Label htmlFor="trailerLink" className="text-right">
                                 Трейлер
