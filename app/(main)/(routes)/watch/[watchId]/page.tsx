@@ -10,6 +10,7 @@ import {AnimeData} from "@/components/types/anime-types";
 import {getAllAnimeData} from "@/lib/db/userDB";
 import Image from "next/image";
 import StaffHoverCard from "@/components/ui/watch/member-hover-card";
+import {cn} from "@/lib/utils";
 
 
 
@@ -90,7 +91,16 @@ export default async function WatchPage({
                                 <span
                                     className="absolute right-0 p-3 rounded-bl-2xl bg-white text-red-900">{animeDataEx[0].existedEpisodes} / {animeDataEx[0].episodesExpected}</span>
                                 <span
-                                    className="absolute left-0 p-3 rounded-br-2xl bg-orange-500">{animeDataEx[0].statusText}</span>
+                                    className={cn(
+                                        'absolute left-0 p-3 rounded-br-2xl',
+                                        {
+                                            'bg-orange-500': animeDataEx[0].statusId === 1,
+                                            'bg-green-500': animeDataEx[0].statusId === 2,
+                                            'bg-blue-500': animeDataEx[0].statusId === 3,
+                                        }
+                                    )}>
+                                    {animeDataEx[0].statusText}
+                                </span>
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Button size="kachurGrad" className="gap-4">
@@ -129,7 +139,11 @@ export default async function WatchPage({
                             </div>
                             <div >
                                 <span>Статус</span>
-                                <span className="row_v mb-1"><Badge>{animeDataEx[0].statusText}</Badge></span>
+                                <span className="row_v mb-1">
+                                    <Badge
+                                        variant={((animeDataEx[0].statusId) as 1 | 2 | 3) || 1}
+                                    >{animeDataEx[0].statusText}</Badge>
+                                </span>
                             </div>
                             <div >
                                 <span>Жанр</span>

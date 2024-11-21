@@ -22,6 +22,8 @@ import { Input } from "@/components/ui/input";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/command";
 
+import Image from "next/image";
+
 type Character = {
     name: string;
     image: string | null;
@@ -147,7 +149,11 @@ export default function CharacterList() {
     const columns: ColumnDef<Character>[] = [
         { accessorKey: "characterId", header: "Айді" },
         { accessorKey: "name", header: "Ім'я персонажа" },
-        { accessorKey: "image", header: "Зображення" },
+        { accessorKey: "image", header: "Зображення", cell: ({row}) => (
+            <img src={row.original.image || ""}
+            alt={row.original.name}
+            width="100px" height="100px" style={{ objectFit: "cover" }} />
+            ) },
         { accessorKey: "animeName", header: "Аніме" },
         { accessorKey: "popularityName", header: "Популярність" },
         { accessorKey: "voiceActroName", header: "Озвучує" },
@@ -479,7 +485,11 @@ export default function CharacterList() {
                        onChange={(event) => setSearchQuery(event.target.value)} className="max-w-sm"/>
             </div>
             <DataTable columns={columns}
-                       data={characterList.filter(char => char.name.toLowerCase().includes(searchQuery.toLowerCase()))}/>
+                       data={characterList.filter(char =>
+                           char.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           char.voiceActroName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           char.animeName?.toLowerCase().includes(searchQuery.toLowerCase())
+                           )}/>
         </div>
     );
 }

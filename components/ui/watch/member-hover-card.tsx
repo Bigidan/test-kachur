@@ -53,35 +53,64 @@ const StaffHoverCard: React.FC<StaffHoverCardProps> = ({ children, memberId, wat
     }, [isHovered, memberId, watchId]);
 
     return (
-        <HoverCard openDelay={300} closeDelay={300}>
+        <HoverCard openDelay={100} closeDelay={300}>
             <HoverCardTrigger
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
                 {children}
             </HoverCardTrigger>
-            <HoverCardContent className="w-full">
-                {loading ? (
-                    <div className="flex items-center justify-start">
-                        Завантаження...
-                    </div>
-                ) : profileData && profileData[0] ? (
-                    <div className="flex space-x-4">
-                        {profileData.map((profile: ProfileType) => (
-                            <div key={profile.characterId} className="flex flex-col items-center justify-end w-32">
-                                <img src={profile.image || ""} alt={profile.name} width="100px" height="133px" style={{ objectFit: "cover", aspectRatio: 9 / 12 }} />
-                                <div>
-                                    <h4 className="text-sm font-semibold">{profile.name}</h4>
-                                </div>
-                            </div>
-                        ))}
+            <HoverCardContent className="w-full AnotherRoles bg-gradient-to-b from-[#BA0000] to-[#540000]">
+                <div className="w-full relative">
+                    {loading ? (
+                        <div className="flex items-center justify-start">
+                            Завантаження...
+                        </div>
+                    ) : profileData && profileData[0] ? (
+                        <div className="flex gap-3">
+                            {
+                                profileData.map((profile: ProfileType, index) => {
+                                    const isDifferentAnimeId = (profileData[index + 1]?.animeId !== watchId && profileData[index]?.animeId == watchId);
 
-                    </div>
-                ) : (
-                    <div className="text-sm text-muted-foreground">
-                        Інформація недоступна
-                    </div>
-                )}
+                                    return (
+                                        <div key={profile.characterId} className="flex flex-row items-center justify-start gap-3">
+                                            <div
+                                                className="flex flex-col items-center justify-start bg-white rounded-md overflow-hidden w-32 relative"
+                                                style={{ cursor: "pointer", aspectRatio: 9 / 12.5 }}
+                                            >
+                                                <img
+                                                    src={profile.image || ""}
+                                                    alt={profile.name}
+                                                    width="144px"
+                                                    style={{ objectFit: "cover", aspectRatio: 9 / 10 }}
+                                                />
+                                                <div className="flex justify-center bg-white p-1 text-wrap items-center text-center w-full h-full">
+                                                    <h4 className="text-sm uppercase font-extrabold text-background m-0 p-0 leading-none">
+                                                        {profile.name}
+                                                    </h4>
+                                                </div>
+
+                                            </div>
+                                            { isDifferentAnimeId && (
+                                                <div className="w-[2px] h-full rounded-md bg-white">
+
+                                                </div>
+                                            )
+                                            }
+                                        </div>
+                                    );
+                                })
+                            }
+
+                        </div>
+                    ) : (
+                        <div className="text-sm text-muted-foreground">
+                            Інформація недоступна
+                        </div>
+                    )}
+
+
+                </div>
             </HoverCardContent>
         </HoverCard>
     );
