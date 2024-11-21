@@ -61,13 +61,13 @@ export default async function WatchPage({
         return (
             <div>
                 <span>{title}</span>
-                <span className="row_v gap-1">
+                <span className="row_v gap-1 gradient-wave">
             {staff.map((member, index) => (
                 <StaffHoverCard key={index} memberId={member.memberId} watchId={Number(watchId)}>
-                    <span className="actor-item">
+                    <span className="actor-item hover:underline ">
                         {member.memberNickname}
-                        {index < staff.length - 1 && ', '}
-                    </span>
+
+                    </span>{index < staff.length - 1 && ', '}
                 </StaffHoverCard>
             ))}
             </span>

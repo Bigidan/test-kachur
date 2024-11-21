@@ -105,9 +105,9 @@ export async function getUsersWithPagination(page: number = 1, pageSize: number 
 }
 
 // Функція для оновлення користувача
-export async function updateUser(userId: number, roleId: number, nickname: string, name: string, email: string, autoSkip: boolean) {
+export async function updateUser(userId: number, roleId: number, nickname: string, name: string, email: string, autoSkip: boolean, image: string, art: string) {
     return db.update(userTable)
-        .set({ roleId: roleId, nickname: nickname, name: name, email: email, autoSkip: autoSkip })
+        .set({ roleId: roleId, nickname: nickname, name: name, email: email, autoSkip: autoSkip, image: image, art: art })
         .where(eq(userTable.userId, userId)).returning({ id: userTable.userId });
 }
 
@@ -563,26 +563,65 @@ export async function deleteEpisode(episodeId: number) {
 
 
 
-// Функція для отримання всіх персонажів
-export async function getAllCharacters() {
-    return db.select({
-        name: characterTable.name,
-        animeId: characterTable.animeId,
-        image: characterTable.image,
-        popularityId: characterTable.popularityId,
-        characterId: characterTable.characterId,
-        voiceActorId: characterTable.voiceActorId,
+export async function getCharactersWithPagination(page: number = 1, pageSize: number = 20) {
+    const offset = (page - 1) * pageSize;
 
-        popularityName: popularityTable.popularity,
-        voiceActroName: userTable.nickname,
-        animeName: animeTable.nameUkr,
+    const [characters, totalCharactersCount] = await Promise.all([
+        db.select({
+            name: characterTable.name,
+            animeId: characterTable.animeId,
+            image: characterTable.image,
+            popularityId: characterTable.popularityId,
+            characterId: characterTable.characterId,
+            voiceActorId: characterTable.voiceActorId,
 
-    }).from(characterTable)
-        .leftJoin(memberTable, eq(memberTable.memberId, characterTable.voiceActorId))
-        .leftJoin(userTable, eq(memberTable.userId, userTable.userId))
-        .leftJoin(popularityTable, eq(popularityTable.popularityId, characterTable.popularityId))
-        .leftJoin(animeTable, eq(animeTable.animeId, characterTable.animeId));
+            popularityName: popularityTable.popularity,
+            voiceActroName: userTable.nickname,
+            animeName: animeTable.nameUkr,
+
+        }).from(characterTable)
+            .leftJoin(memberTable, eq(memberTable.memberId, characterTable.voiceActorId))
+            .leftJoin(userTable, eq(memberTable.userId, userTable.userId))
+            .leftJoin(popularityTable, eq(popularityTable.popularityId, characterTable.popularityId))
+            .leftJoin(animeTable, eq(animeTable.animeId, characterTable.animeId))
+            .limit(pageSize)
+            .offset(offset),
+        db
+            .select({ count: db.$count(characterTable) })
+            .from(characterTable)
+            .then(result => result[0].count)
+    ]);
+
+    return {
+        characters,
+        totalPages: Math.ceil(totalCharactersCount / pageSize),
+        currentPage: page,
+        totalCharacters: totalCharactersCount
+    };
 }
+
+
+
+// Функція для отримання всіх персонажів
+// export async function getAllCharacters() {
+//     return db.select({
+//         name: characterTable.name,
+//         animeId: characterTable.animeId,
+//         image: characterTable.image,
+//         popularityId: characterTable.popularityId,
+//         characterId: characterTable.characterId,
+//         voiceActorId: characterTable.voiceActorId,
+//
+//         popularityName: popularityTable.popularity,
+//         voiceActroName: userTable.nickname,
+//         animeName: animeTable.nameUkr,
+//
+//     }).from(characterTable)
+//         .leftJoin(memberTable, eq(memberTable.memberId, characterTable.voiceActorId))
+//         .leftJoin(userTable, eq(memberTable.userId, userTable.userId))
+//         .leftJoin(popularityTable, eq(popularityTable.popularityId, characterTable.popularityId))
+//         .leftJoin(animeTable, eq(animeTable.animeId, characterTable.animeId));
+// }
 
 // Функція для додавання нового персонажа
 export async function addCharacter(

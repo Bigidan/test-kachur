@@ -239,12 +239,61 @@ body,
   content: "ІНШІ ВІДОМІ РОЛІ";
   position: absolute;
   top: -25px;
-  left: 60%;
+  left: 50%;
 
   background-color: #BA0000;
 
   border-radius: calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0 0;
 
   padding: 3px 5px;
+  text-wrap: nowrap;
+}
 
+@keyframes gradient-wave {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 300% 50%;
+  }
+}
+
+.gradient-wave {
+  background: linear-gradient(90deg, white, #ff7a18, #af002d, #319197, #ff7a18, white, white, white, white, white, white, white, white, white, white, white);
+  background-size: 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-wave 7s linear infinite;
+}
+
+
+
+
+.gradient-text {
+  font-size: 4rem;
+  font-weight: bold;
+  background: linear-gradient(
+          45deg,
+          orange,
+          red,
+          yellow,
+          green,
+          blue,
+          white,
+          orange
+  );
+  background-size: 400% 100%;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: gradientFlow 10s linear infinite;
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 0%;
+  }
 }

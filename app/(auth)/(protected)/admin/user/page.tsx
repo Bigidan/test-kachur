@@ -60,6 +60,7 @@ type User = {
     autoSkip: boolean;
     password: string;
     image: string | null;
+    art: string | null;
 };
 
 type Role = {
@@ -86,6 +87,8 @@ export default function UserPage() {
         email: "",
         password: "",
         autoSkip: false,
+        image: "",
+        art: "",
     });
     const [selectedRole, setSelectedRole] = useState<Role | null>(null);
     const [openRoleSelect, setOpenRoleSelect] = useState(false);
@@ -154,6 +157,8 @@ export default function UserPage() {
                 dataToUpdate.name,
                 dataToUpdate.email,
                 dataToUpdate.autoSkip,
+                dataToUpdate.image,
+                dataToUpdate.art,
             );
 
             await fetchUsers(currentPage, pageSize);
@@ -183,6 +188,8 @@ export default function UserPage() {
             email: "",
             password: "",
             autoSkip: false,
+            image: "",
+            art: "",
         });
         setSelectedRole(null);
         setIsEditing(false);
@@ -198,6 +205,8 @@ export default function UserPage() {
             email: user.email,
             password: "",
             autoSkip: user.autoSkip,
+            image: user.image || "",
+            art: user.art || "",
         });
         const userRole = roles.find(role => role.roleId === user.roleId);
         setSelectedRole(userRole || null);
@@ -413,12 +422,12 @@ export default function UserPage() {
                                             className="w-full justify-between"
                                         >
                                             {selectedRole ? selectedRole.description : "Виберіть роль..."}
-                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-[200px] p-0">
                                         <Command>
-                                            <CommandInput placeholder="Пошук ролі..." />
+                                            <CommandInput placeholder="Пошук ролі..."/>
                                             <CommandList>
                                                 <CommandEmpty>Ролі не знайдено.</CommandEmpty>
                                                 <CommandGroup>
@@ -492,6 +501,33 @@ export default function UserPage() {
                                 onChange={(e) => setFormData({...formData, password: e.target.value})}
                                 className="col-span-3"
                                 placeholder="Залиште порожнім, щоб не змінювати"
+                            />
+                        </div>
+
+
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="image" className="text-right">
+                                Зображення
+                            </Label>
+                            <Input
+                                id="image"
+                                type="text"
+                                value={formData.image}
+                                onChange={(e) => setFormData({...formData, image: e.target.value})}
+                                className="col-span-3"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="art" className="text-right">
+                                Арт
+                            </Label>
+                            <Input
+                                id="art"
+                                type="text"
+                                value={formData.art}
+                                onChange={(e) => setFormData({...formData, art: e.target.value})}
+                                className="col-span-3"
                             />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">

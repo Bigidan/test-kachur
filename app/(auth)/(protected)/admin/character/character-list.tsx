@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react";
 import {
     addCharacter,
-    getAllCharacters,
     deleteCharacter,
     updateCharacter,
     getAllAnime,
-    getAllPopularity, getTeam
+    getAllPopularity, getTeam, getCharactersWithPagination
 } from "@/lib/db/admin";
 import { Check, ChevronsUpDown} from "lucide-react";
 import { Anime } from "@/components/types/anime-types";
@@ -15,12 +14,20 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/main/data-table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Plus } from "lucide-react";
+import { MoreHorizontal, Plus, RefreshCcw } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/command";
+import {
+    Pagination,
+    PaginationContent, PaginationEllipsis,
+    PaginationItem,
+    PaginationLink, PaginationNext,
+    PaginationPrevious
+} from "@/components/ui/pagination";
+import {cn} from "@/lib/utils";
 
 
 type Character = {
@@ -56,12 +63,17 @@ export default function CharacterList() {
     const [popularityList, setPopularityList] = useState<{popularityId: number, popularity: string | null}[]>([]);
     const [voiceActorList, setVoiceActorList] = useState<{memberId: number, userId: number | null, nickname: string | null}[]>([]);
 
+    // Стани для пагінації
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [pageSize, setPageSize] = useState(20); // Кількість елементів на сторінці
+
     useEffect(() => {
-        fetchCharacters();
+        fetchCharacters(currentPage, pageSize);
         fetchAnimeList();
         fetchPopularityList();
         fetchVoiceActorList();
-    }, []);
+    }, [currentPage, pageSize]);
 
     const resetData = () => {
         setSelectedAnime(null);
@@ -71,21 +83,19 @@ export default function CharacterList() {
         setImage("");
     }
 
-    const fetchCharacters = async () => {
-        const data = await getAllCharacters();
-        setCharacterList(data);
+    const fetchCharacters = async (page: number, pageSize: number) => {
+        const response = await getCharactersWithPagination(page, pageSize);
+        setCharacterList(response.characters);
+        setTotalPages(response.totalPages);
     };
-
     const fetchAnimeList = async () => {
         const data = await getAllAnime();
         setAnimeList(data);
     };
-
     const fetchPopularityList = async () => {
         const data = await getAllPopularity();
         setPopularityList(data);
     };
-
     const fetchVoiceActorList = async () => {
         const data = await getTeam();
         setVoiceActorList(data);
@@ -101,7 +111,7 @@ export default function CharacterList() {
                     name || "",
                     image || "",
                 );
-                await fetchCharacters();
+                await fetchCharacters(currentPage, pageSize);
                 setAddedCharacterId(newId[0].id)
             } catch (error) {
                 console.error("Помилка при додаванні персонажа:", error);
@@ -114,7 +124,7 @@ export default function CharacterList() {
     const handleDeleteCharacter = async (characterId: number) => {
         try {
             await deleteCharacter(characterId);
-            await fetchCharacters();
+            await fetchCharacters(currentPage, pageSize);
         } catch (error) {
             console.error("Помилка при видаленні персонажа:", error);
         }
@@ -135,7 +145,7 @@ export default function CharacterList() {
                     setEditCharacterId(null);
                     setEditName("");
                     setEditImage("");
-                    await fetchCharacters();
+                    await fetchCharacters(currentPage, pageSize);
                 } catch (error) {
                     console.error("Помилка при редагуванні персонажа:", error);
                 }
@@ -144,6 +154,33 @@ export default function CharacterList() {
             }
         }
     };
+
+
+    // Функції для навігації по сторінках
+    const handlePageChange = (page: number) => {
+        if (page > 0 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
+
+    // Генерація масиву сторінок для відображення
+    const generatePageNumbers = () => {
+        const pages = [];
+        const maxPagesToShow = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+        const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+        if (endPage - startPage + 1 < maxPagesToShow) {
+            startPage = Math.max(1, endPage - maxPagesToShow + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(i);
+        }
+
+        return pages;
+    };
+
 
     const columns: ColumnDef<Character>[] = [
         { accessorKey: "characterId", header: "Айді" },
@@ -196,6 +233,64 @@ export default function CharacterList() {
             },
         },
     ];
+
+
+    const frameworks = [
+        {
+            value: "10",
+            label: "10",
+        },
+        {
+            value: "20",
+            label: "20",
+        },
+        {
+            value: "30",
+            label: "30",
+        },
+        {
+            value: "40",
+            label: "40",
+        },
+    ]
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState("20");
+
+
+    const Pagg = () => {
+        return (
+            <Pagination>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            isActive={currentPage === 1}
+                        />
+                    </PaginationItem>
+                    {generatePageNumbers().map(page => (
+                        <PaginationItem key={page}>
+                            <PaginationLink
+                                href="#"
+                                onClick={() => handlePageChange(page)}
+                                isActive={page === currentPage}
+                            >
+                                {page}
+                            </PaginationLink>
+                        </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                        <PaginationEllipsis />
+                    </PaginationItem>
+                    <PaginationItem>
+                        <PaginationNext
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            isActive={currentPage === totalPages}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
+        )
+    }
 
     return (
         <div className="w-full flex flex-col space-x-3 p-4">
@@ -479,16 +574,74 @@ export default function CharacterList() {
                     </DialogContent>
                 </Dialog>
             </div>
-            <div className="flex items-center py-4">
+            <div className="flex items-center py-4 gap-2">
                 <Input placeholder="Пошук за ім'ям персонажа..." value={searchQuery}
                        onChange={(event) => setSearchQuery(event.target.value)} className="max-w-sm"/>
+
+
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={open}
+                            className="w-[200px] justify-between"
+                        >
+                            {value
+                                ? frameworks.find((framework) => framework.value === value)?.label
+                                : "Кількість користувачів на сторінку..."}
+                            <ChevronsUpDown className="opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0">
+                        <Command>
+                            <CommandInput placeholder="Search framework..." />
+                            <CommandList>
+                                <CommandEmpty>Не обрано....</CommandEmpty>
+                                <CommandGroup>
+                                    {frameworks.map((framework) => (
+                                        <CommandItem
+                                            key={framework.value}
+                                            value={framework.value}
+                                            onSelect={(currentValue) => {
+                                                setValue(currentValue === value ? "" : currentValue);
+                                                setPageSize(currentValue === value ? 20 : Number(currentValue));
+                                                setOpen(false);
+                                            }}
+                                        >
+                                            {framework.label}
+                                            <Check
+                                                className={cn(
+                                                    "ml-auto",
+                                                    value === framework.value ? "opacity-100" : "opacity-0"
+                                                )}
+                                            />
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
+
+                <Button variant="outline" size="icon"
+                onClick={() => fetchCharacters(currentPage, pageSize)}>
+                    <RefreshCcw/>
+                </Button>
+
             </div>
+
+            <Pagg/>
+
             <DataTable columns={columns}
                        data={characterList.filter(char =>
                            char.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            char.voiceActroName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            char.animeName?.toLowerCase().includes(searchQuery.toLowerCase())
                            )}/>
+
+            <Pagg/>
+
         </div>
     );
 }

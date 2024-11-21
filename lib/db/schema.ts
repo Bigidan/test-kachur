@@ -74,6 +74,7 @@ export const userTable = sqliteTable('user', {
     email: text('email').notNull(),
     password: text('password').notNull(),
     image: text('image'),
+    art: text('art'),
 });
 
 export const memberTable = sqliteTable('member', {

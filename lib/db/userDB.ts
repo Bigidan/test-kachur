@@ -277,3 +277,7 @@ export async function getCharactersByActorId(searchUserId: number, searchFromAni
         )
         .limit(5);
 }
+
+export async function getArtByUser(searchUserId: number) {
+    return db.select({ uart: userTable.art, nickname: userTable.nickname }).from(userTable).where(eq(userTable.userId, searchUserId));
+}
