@@ -275,7 +275,7 @@ export async function getCharactersByActorId(searchUserId: number, searchFromAni
             // Далі сортуємо за popularityId
             characterTable.popularityId
         )
-        .limit(5);
+        .limit(8);
 }
 
 export async function getArtByUser(searchUserId: number) {
