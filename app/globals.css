@@ -218,11 +218,6 @@ body,
   gap: 1rem;
 }
 
-.animeDialog PopoverContent {
-  width: 450px;
-  padding: 0;
-}
-
 .loadingProg {
   animation-name: example;
   animation-duration: 4s;
@@ -234,6 +229,10 @@ body,
   100% { width: 100%;}
 }
 
+
+.AnotherRoles {
+  transition: all 0.2s linear;
+}
 
 .AnotherRoles::before {
   content: "ІНШІ ВІДОМІ РОЛІ";

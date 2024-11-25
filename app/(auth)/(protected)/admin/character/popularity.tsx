@@ -5,7 +5,7 @@ import { addPopularity, getAllPopularity, deletePopularity, updatePopularity } f
 import { ArrowUpDown } from "lucide-react";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/components/ui/main/data-table";
+import { DataTable } from "@/components/main/data-table";
 import {
     DropdownMenu,
     DropdownMenuContent,

@@ -11,7 +11,7 @@ import {
 import { Check, ChevronsUpDown} from "lucide-react";
 import { Anime } from "@/components/types/anime-types";
 import { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/components/ui/main/data-table";
+import { DataTable } from "@/components/main/data-table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Plus, RefreshCcw } from "lucide-react";

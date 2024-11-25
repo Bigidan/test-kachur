@@ -1,10 +1,10 @@
-import HeroSection from "@/components/ui/main/hero-section";
-import InfiniteImageScroll from "@/components/ui/main/infinite-image";
+import HeroSection from "@/components/main/hero-section";
+import InfiniteImageScroll from "@/components/main/infinite-image";
 import { Button } from "@/components/ui/button";
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import {Skeleton} from "@/components/ui/skeleton";
-import HeadTitle from "@/components/ui/main/head-title";
+import HeadTitle from "@/components/main/head-title";
 
 
 export default function Home() {

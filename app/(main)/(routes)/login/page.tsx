@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import React from "react";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import { login } from "@/lib/auth/session";
 
 const formSchemaLogin = z.object({
     username: z.string().min(2, {
@@ -107,6 +108,7 @@ const LoginPage = () => {
                 `Перейти на сторінку реєстрації?`, "Перейти", true, "/register");
         }
         else {
+            await login(user);
             showToast("Ви успішно увійшли!", `Вітаємо, ${user.nickname}!`,
                 "Гаразд", false, "/");
             router.push("/");

@@ -1,7 +1,7 @@
 import React from 'react';
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
-import HeadTitle from "@/components/ui/main/head-title";
+import HeadTitle from "@/components/main/head-title";
 import {PlayerProvider} from "@/components/player/player-context";
 import Player from "@/components/player/player";
 import PlayerComponent from "@/components/player/player-component";
@@ -9,8 +9,9 @@ import PlayerComponent from "@/components/player/player-component";
 import {AnimeData} from "@/components/types/anime-types";
 import {getAllAnimeData} from "@/lib/db/userDB";
 import Image from "next/image";
-import StaffHoverCard from "@/components/ui/watch/member-hover-card";
+import StaffHoverCard from "@/components/watch/member-hover-card";
 import {cn} from "@/lib/utils";
+import {notFound} from "next/navigation";
 
 
 
@@ -22,7 +23,7 @@ export default async function WatchPage({
 }){
 
     const watchId = (await params).watchId;
-    if (isNaN(Number(watchId))) return;
+    if (isNaN(Number(watchId))) return notFound();
 
     const animeData: AnimeData = await getAllAnimeData(Number(watchId));
     const {

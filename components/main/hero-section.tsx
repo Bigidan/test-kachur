@@ -1,7 +1,7 @@
 "use client"
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import HeroImages from "@/components/ui/main/hero-images";
+import HeroImages from "@/components/main/hero-images";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HeroType } from "@/components/types/hero-type";

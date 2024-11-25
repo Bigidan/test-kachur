@@ -23,19 +23,10 @@ import {
 } from "@/lib/db/schema";
 import {eq, sql} from "drizzle-orm";
 import { hashPassword, verifyPassword } from "@/lib/auth/jwt";
-import {AnimeData} from "@/components/types/anime-types"; // adjust the import path as needed
+import {AnimeData} from "@/components/types/anime-types";
+import {User} from "@/components/types/user"; // adjust the import path as needed
 
 
-
-type User = {
-    userId: number;
-    roleId: number | null;
-    nickname: string;
-    name: string;
-    email: string;
-    autoSkip: boolean;
-    password: string;
-};
 
 export async function userRegister(values: {
     nickname: string;
@@ -61,7 +52,16 @@ export async function getUserByField(
     password?: string
 ): Promise<User | null | undefined> {
     const result = await db
-        .select()
+        .select({
+            userId: userTable.userId,
+            roleId: userTable.roleId,
+            nickname: userTable.nickname,
+            name: userTable.name,
+            email: userTable.email,
+            autoSkip: userTable.autoSkip,
+            image: userTable.image,
+            password: userTable.password,
+        })
         .from(userTable)
         .where(eq(userTable[field], value));
 
@@ -73,6 +73,8 @@ export async function getUserByField(
     if (password && !await verifyPassword(password, user.password)) {
         return null;
     }
+
+    user.password = "";
 
     return user;
 }

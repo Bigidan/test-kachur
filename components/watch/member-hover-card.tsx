@@ -69,7 +69,7 @@ const StaffHoverCard: React.FC<StaffHoverCardProps> = ({ children, memberId, wat
             >
                 {children}
             </HoverCardTrigger>
-            <HoverCardContent className={cn("w-full bg-gradient-to-b from-[#BA0000] to-[#540000]",
+            <HoverCardContent className={cn("w-full bg-gradient-to-b from-[#BA0000] to-[#540000] transition-all",
                 {
                     "AnotherRoles": !loading && profileData && profileData?.length > 1
                 })}

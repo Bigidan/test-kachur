@@ -1,8 +1,6 @@
 import {
     Cloud,
-    Keyboard,
     SlidersVertical,
-    LogOut,
     Plus,
     PlusCircle,
     Settings,
@@ -11,6 +9,8 @@ import {
     Users,
     Ellipsis,
 } from "lucide-react"
+
+import { User as UserType } from "@/components/types/user";
 
 import Image from 'next/image'
 
@@ -24,8 +24,15 @@ import { DropdownMenu,
     DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator,
     DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import Link from "next/link";
+import {getSession} from "@/lib/auth/session";
+import LogOutButton from "@/components/navigation/log-out-button";
 
 const MainHeaderBar = async () => {
+
+    const parsed = await getSession();
+    const user = parsed?.user as UserType;
+
+
     return (
         <header
             className="p-5 sticky top-0 z-40 w-full border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -39,83 +46,111 @@ const MainHeaderBar = async () => {
                 <div className="flex items-center justify-between space-x-6 max-lg:justify-end">
                     <HeaderNavigation />
                     <div className="mx-12">
+                        {user != undefined ? (
                         <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="link" size="icon">
                                 <Avatar>
-                                    <AvatarImage src="https://avatars.githubusercontent.com/u/73254585?v=4"></AvatarImage>
-                                    <AvatarFallback> </AvatarFallback>
-
+                                    <AvatarImage src={user.image || ""}></AvatarImage>
+                                    <AvatarFallback><User/></AvatarFallback>
                                 </Avatar>
                             </Button>
                         </DropdownMenuTrigger>
+
+
+
                         <DropdownMenuContent className="w-56">
                             <DropdownMenuLabel className="text-center">Я та моя сім&#39;я</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuGroup>
-                                <DropdownMenuItem>
-                                    <User />
-                                    Профіль
-                                    <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                                <DropdownMenuItem asChild>
+                                    <Link href="/profile">
+                                        <User />
+                                        Профіль
+                                        <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                                    </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <Settings />
-                                    Налаштування
-                                    <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <Keyboard />
-                                    Скорочення клавіш
-                                    <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
+                                <DropdownMenuItem asChild>
+                                    <Link href="/profile/settings">
+                                        <Settings />
+                                        Налаштування
+                                        <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                                    </Link>
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
                             <DropdownMenuSeparator />
+
+                            {user.roleId == 3 ? (
+                                <div>
                             <DropdownMenuGroup>
-                                <DropdownMenuItem>
-                                    <Users />
-                                    Команда
+                                <DropdownMenuItem asChild>
+                                    <Link href="/admin/s?s=team">
+                                        <Users />
+                                        Команда
+                                    </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger>Швидкий вибір</DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent>
-                                            <DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin/s?s=users">
                                                 <UserPlus />
                                                 Додавання
+                                                </Link>
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin/s?s=anime">
                                                 <SlidersVertical />
                                                 Модерація
+                                                </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin/s?s=anime_group">
                                                 <Ellipsis />
                                                 Інше
+                                                </Link>
                                             </DropdownMenuItem>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                             </DropdownMenuGroup>
+
+
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                                <Plus />
-                                Додати серію
+                            <DropdownMenuItem asChild>
+                                <Link href="/admin/s?s=episodes">
+                                    <Plus />
+                                    Додати серію
+                                </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <PlusCircle />
-                                Додати проєкт
+                            <DropdownMenuItem asChild>
+                                <Link href="/admin/s?s=anime">
+                                    <PlusCircle />
+                                    Додати проєкт
+                                </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem disabled>
                                 <Cloud />
                                 API
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                                <LogOut />
-                                Вийти з облікового запису
-                            </DropdownMenuItem>
+                                </div>
+                            ) : null}
+                            <LogOutButton/>
                         </DropdownMenuContent>
+
                     </DropdownMenu>
+                        ) : <div className="flex text-sm flex-row gap-2">
+                            <Button asChild variant="outline">
+                                <Link href="/login">Увійти</Link>
+                            </Button>
+                            <Button asChild variant="outline">
+                                <Link href="/register">Зареєструватися</Link>
+                            </Button>
+                        </div>
+                        }
                     </div>
                     <ModeToggle/>
                 </div>

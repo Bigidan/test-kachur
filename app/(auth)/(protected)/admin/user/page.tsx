@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { deleteUser, getUsersWithPagination, updateUser, getAllRoles } from "@/lib/db/admin";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/components/ui/main/data-table";
+import { DataTable } from "@/components/main/data-table";
 import {
     DropdownMenu,
     DropdownMenuContent,

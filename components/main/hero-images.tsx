@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import ImageCarousel from "@/components/ui/main/image-carousel";
+import ImageCarousel from "@/components/main/image-carousel";
 import {Button} from "@/components/ui/button";
 import Link from "next/link";
 

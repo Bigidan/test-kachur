@@ -4,7 +4,7 @@ import {useCallback, useEffect, useState} from "react";
 import { addTeam, getTeam, deleteMember, updateMember, getUsersByNickname } from "@/lib/db/admin";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/components/ui/main/data-table";
+import { DataTable } from "@/components/main/data-table";
 import {
     DropdownMenu,
     DropdownMenuContent,

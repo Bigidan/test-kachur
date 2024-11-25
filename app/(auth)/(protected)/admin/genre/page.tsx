@@ -5,7 +5,7 @@ import {addGenre, getAllGenres, deleteGenre, updateGenre} from "@/lib/db/admin";
 import { ArrowUpDown } from "lucide-react";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/components/ui/main/data-table";
+import { DataTable } from "@/components/main/data-table";
 import {
     DropdownMenu,
     DropdownMenuContent,

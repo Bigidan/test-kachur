@@ -146,3 +146,15 @@ export const animeDubDirectorTable = sqliteTable('anime_dub_director', {
     animeId: integer('anime_id', { mode: 'number' }).references(() => animeTable.animeId),
     memberId: integer('member_id', { mode: 'number' }).references(() => memberTable.memberId),
 });
+
+
+export const animePopularityTable = sqliteTable('anime_popularity', {
+    popularityId: integer('popularity_id').primaryKey(),
+    popularity: text('popularity').notNull(),
+});
+
+
+export const animeAnimePopularityTable = sqliteTable('anime_anime_popularity', {
+    animeId: integer('anime_id', { mode: 'number' }).references(() => animeTable.animeId),
+    animePopularityId: integer('anime_popularity_id', { mode: 'number' }).references(() => animePopularityTable.popularityId),
+});

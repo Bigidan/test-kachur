@@ -12,7 +12,7 @@ import {
 } from "@/lib/db/admin";
 import { Anime } from "@/components/types/anime-types";
 import { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/components/ui/main/data-table";
+import { DataTable } from "@/components/main/data-table";
 import { Button } from "@/components/ui/button";
 import {ArrowUpDown, MoreHorizontal, Plus} from "lucide-react";
 import {
