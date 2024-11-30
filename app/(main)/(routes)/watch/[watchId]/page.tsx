@@ -40,9 +40,14 @@ export default async function WatchPage({
 
     const formatDateToString = (date: Date): string => {
         const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const monthNames = [
+            'січня', 'лютого', 'березня', 'квітня', 'травня', 'червня',
+            'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'
+        ];
+        const month = monthNames[date.getMonth()];
         const year = date.getFullYear();
-        return `${day}${month}${year}`;
+
+        return `${day} ${month} ${year}`;
     };
 
     // const [hoveredActor, setHoveredActor] = useState<string | null>(null);

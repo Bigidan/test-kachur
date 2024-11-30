@@ -148,9 +148,16 @@ export async function deleteMember(memberId: number) {
 
 // Функція для отримання користувачів по ніку
 export async function getUsersByNickname(nickname: string) {
+    if (nickname.length < 1) {
+        return [];
+    }
+
     return db
         .select()
-        .from(userTable).where(like(userTable.nickname, `%${nickname}%`));
+        .from(userTable)
+        .where(like(userTable.nickname, `%${nickname}%`))
+        .limit(10)  // Обмеження кількості результатів
+        .orderBy(userTable.nickname);  // Сортування заніком
 }
 
 

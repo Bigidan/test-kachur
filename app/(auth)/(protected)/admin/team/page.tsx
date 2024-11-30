@@ -57,28 +57,47 @@ export default function TeamPage() {
     const [editingMember, setEditingMember] = useState<Member | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [isEditing, setIsEditing] = useState(false);
+    const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
     const fetchMembers = async () => {
         const data = await getTeam();
         setMembers(data);
     };
 
-    const fetchUsers = useCallback(() => async () => {
-        const data = await getUsersByNickname(searchTerm);
-        setUsers(data);
-    }, [searchTerm]);
+    const fetchUsers = useCallback(async (term: string) => {
+        if (term.length >= 2) {
+            const data = await getUsersByNickname(term);
+            setUsers(data);
+        }
+    }, []);
 
     useEffect(() => {
         fetchMembers();
     }, []);
 
     useEffect(() => {
-        if (searchTerm) {
-            fetchUsers();
+        // Скасування попереднього таймауту
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
         }
-    }, [fetchUsers, searchTerm]);
 
+        // Встановлення нового таймауту
+        if (searchTerm) {
+            const timeout = setTimeout(() => {
+                fetchUsers(searchTerm);
+            }, 500);
+            setSearchTimeout(timeout);
+        } else {
+            setUsers([]);
+        }
 
+        // Очищення таймауту при розмонтуванні
+        return () => {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+        };
+    }, [searchTerm, fetchUsers]);
 
     const handleAddMember = async () => {
         if (selectedUser) {
@@ -86,9 +105,11 @@ export default function TeamPage() {
                 await addTeam(selectedUser.userId);
                 setSelectedUser(null);
                 setOpen(false);
+                setSearchTerm("");
                 await fetchMembers();
             } catch (error) {
                 console.error("Помилка при додаванні учасника:", error);
+                alert("Не вдалось додати учасника");
             }
         } else {
             alert("Будь ласка, виберіть користувача.");
@@ -102,19 +123,12 @@ export default function TeamPage() {
                 setEditingMember(null);
                 setSelectedUser(null);
                 setIsEditing(false);
+                setSearchTerm("");
                 await fetchMembers();
             } catch (error) {
                 console.error("Помилка при оновленні учасника:", error);
+                alert("Не вдалось оновити учасника");
             }
-        }
-    };
-
-    const handleDeleteMember = async (memberId: number) => {
-        try {
-            await deleteMember(memberId);
-            await fetchMembers();
-        } catch (error) {
-            console.error("Помилка при видаленні учасника:", error);
         }
     };
 
@@ -164,53 +178,15 @@ export default function TeamPage() {
         },
     ];
 
-    const UserSelect = ({ onSelect }: { onSelect: (user: User) => void }) => (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-[200px] justify-between"
-                >
-                    {selectedUser ? selectedUser.nickname : "Виберіть користувача..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
-                <Command>
-                    <CommandInput
-                        placeholder="Пошук користувача..."
-                        value={searchTerm}
-                        onValueChange={setSearchTerm}
-                    />
-                    <CommandList>
-                        <CommandEmpty>Користувачів не знайдено.</CommandEmpty>
-                        <CommandGroup>
-                            {users.map((user) => (
-                                <CommandItem
-                                    key={user.userId}
-                                    value={user.nickname}
-                                    onSelect={() => {
-                                        onSelect(user);
-                                        setOpen(false);
-                                    }}
-                                >
-                                    <Check
-                                        className={cn(
-                                            "mr-2 h-4 w-4",
-                                            selectedUser?.userId === user.userId ? "opacity-100" : "opacity-0"
-                                        )}
-                                    />
-                                    {user.nickname}
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
-                    </CommandList>
-                </Command>
-            </PopoverContent>
-        </Popover>
-    );
+    const handleDeleteMember = async (memberId: number) => {
+        try {
+            await deleteMember(memberId);
+            await fetchMembers();
+        } catch (error) {
+            console.error("Помилка при видаленні учасника:", error);
+        }
+    };
+
 
     return (
         <div className="w-full flex flex-col space-x-3 p-4">
@@ -231,7 +207,59 @@ export default function TeamPage() {
                             </DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
-                            <UserSelect onSelect={setSelectedUser} />
+                            <Popover open={open} onOpenChange={setOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        aria-expanded={open}
+                                        className="w-[200px] justify-between"
+                                    >
+                                        {selectedUser ? selectedUser.nickname : "Виберіть користувача..."}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[200px] p-0">
+                                    <Command>
+                                        <CommandInput
+                                            placeholder="Пошук користувача..."
+                                            value={searchTerm}
+                                            onValueChange={(value) => {
+                                                setSearchTerm(value);
+                                            }}
+                                            // Важливо: запобігаємо закриттю popover
+                                            onFocus={() => setOpen(true)}
+                                        />
+                                        <CommandList>
+                                            {users.length === 0 ? (
+                                                <CommandEmpty>Користувачів не знайдено.</CommandEmpty>
+                                            ) : (
+                                                <CommandGroup>
+                                                    {users.map((user) => (
+                                                        <CommandItem
+                                                            key={user.userId}
+                                                            value={user.nickname}
+                                                            onSelect={() => {
+                                                                setSelectedUser(user);
+                                                                setOpen(false);
+                                                                setSearchTerm("");
+                                                            }}
+                                                        >
+                                                            <Check
+                                                                className={cn(
+                                                                    "mr-2 h-4 w-4",
+                                                                    selectedUser?.userId === user.userId ? "opacity-100" : "opacity-0"
+                                                                )}
+                                                            />
+                                                            {user.nickname}
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            )}
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
                         </div>
                         <DialogFooter>
                             <Button type="button" onClick={handleAddMember}>
@@ -251,7 +279,7 @@ export default function TeamPage() {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
-                        <UserSelect onSelect={setSelectedUser} />
+                        {/*<UserSelect onSelect={setSelectedUser} />*/}
                     </div>
                     <DialogFooter>
                         <Button type="button" onClick={handleUpdateMember}>
