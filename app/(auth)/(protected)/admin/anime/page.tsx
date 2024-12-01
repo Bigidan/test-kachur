@@ -1,6 +1,6 @@
 "use client"
 // AnimePage.tsx
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     getAllAnime,
     updateAnime,
@@ -38,6 +38,7 @@ import {
 import {InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot} from "@/components/ui/input-otp";
 import {Textarea} from "@/components/ui/textarea";
 import {Checkbox} from "@/components/ui/checkbox";
+import DropdownSelect from "@/components/main/dropdown-select";
 
 type ReferenceItem = {
     id: number;
@@ -66,6 +67,7 @@ export default function AnimePage() {
     const [animeAges, setAnimeAges] = useState<ReferenceItem[]>([]);
     const [animeStudios, setAnimeStudios] = useState<ReferenceItem[]>([]);
     const [directors, setDirectors] = useState<ReferenceItem[]>([]);
+    const [animePopularities, setAnimePopularities] = useState<ReferenceItem[]>([]);
 
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -78,12 +80,15 @@ export default function AnimePage() {
     const [selectedAge, setSelectedAge] = useState<{id: number, name: string}[] | null>(null);
     const [selectedStudio, setSelectedStudio] = useState<{id: number, name: string}[] | null>(null);
     const [selectedDirector, setSelectedDirector] = useState<{id: number, name: string}[] | null>(null);
+    const [selectedAnimePopularity, setSelectedAnimePopularity] = useState<{id: number, name: string}[] | null>(null);
+
     const [openTypeSelect, setOpenTypeSelect] = useState(false);
     const [openStatusSelect, setOpenStatusSelect] = useState(false);
     const [openSourceSelect, setOpenSourceSelect] = useState(false);
     const [openAgeSelect, setOpenAgeSelect] = useState(false);
     const [openStudioSelect, setOpenStudioSelect] = useState(false);
     const [openDirectorSelect, setOpenDirectorSelect] = useState(false);
+    const [openPopularitySelect, setOpenPopularitySelect] = useState(false);
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -152,6 +157,7 @@ export default function AnimePage() {
                 setAnimeAges(data.ages);
                 setAnimeStudios(data.studios);
                 setDirectors(data.directors);
+                setAnimePopularities(data.animePopularitys);
             } catch (error) {
                 console.error('Failed to fetch anime data:', error);
                 // Тут можна додати відображення помилки для користувача
@@ -172,7 +178,7 @@ export default function AnimePage() {
     const handleUpdateAnime = async () => {
         if (
             !selectedType || !selectedStatus || !selectedSource ||
-            !selectedAge || !selectedStudio || !selectedDirector || !editingAnimeId
+            !selectedAge || !selectedStudio || !selectedDirector || !editingAnimeId || !selectedAnimePopularity
         ) return;
 
         try {
@@ -184,6 +190,7 @@ export default function AnimePage() {
                 selectedAge[0].id,
                 selectedStudio[0].id,
                 selectedDirector[0].id,
+                selectedAnimePopularity[0].id,
                 formData.nameUkr || "",
                 formData.nameJap || "",
                 formData.nameEng || "",
@@ -206,7 +213,7 @@ export default function AnimePage() {
     const handleAddAnime = async () => {
         if (
             !selectedType || !selectedStatus || !selectedSource ||
-            !selectedAge || !selectedStudio || !selectedDirector
+            !selectedAge || !selectedStudio || !selectedDirector || !selectedAnimePopularity
         ) return;
         try {
             await addAnime(
@@ -216,6 +223,7 @@ export default function AnimePage() {
                 selectedAge[0].id,
                 selectedStudio[0].id,
                 selectedDirector[0].id,
+                selectedAnimePopularity[0].id,
                 formData.nameUkr || "",
                 formData.nameJap || "",
                 formData.nameEng || "",
@@ -317,6 +325,9 @@ export default function AnimePage() {
 
         const selectedDirector = directors.find(director => director.id === anime.directorId);
         setSelectedDirector(selectedDirector ? [selectedDirector] : null);
+
+        const selectedAnimePopularity = animePopularities.find(pop => pop.id === anime.popularity);
+        setSelectedAnimePopularity(selectedAnimePopularity ? [selectedAnimePopularity] : null);
     };
     const startAdding = () => {
         setIsAddDialogOpen(true);
@@ -383,27 +394,6 @@ export default function AnimePage() {
         setSelectedDubDirectors(selectedDubDirectors);
         setSelectedVocals(selectedVocals);
         setSelectedVoiceActors(selectedVoiceActors);
-        //
-        // const selectedTranslatorsL = animeStatuses.find(status => status.id === anime.statusId);
-        // setSelectedTranslators(selectedTranslatorsL ? [selectedTranslatorsL] : null);
-        //
-        // const selectedEditorsL = animeSources.find(source => source.id === anime.sourceId);
-        // setSelectedEditors(selectedEditorsL ? [selectedEditorsL] : null);
-        //
-        // const selectedSoundDesignersL = animeAges.find(age => age.id === anime.ageId);
-        // setSelectedSoundDesigners(selectedSoundDesignersL ? [selectedSoundDesignersL] : null);
-        //
-        // const selectedVisualArtistsL = animeStudios.find(studio => studio.id === anime.studioId);
-        // setSelectedVisualArtists(selectedVisualArtistsL ? [selectedVisualArtistsL] : null);
-        //
-        // const selectedDubDirectorsL = directors.find(director => director.id === anime.directorId);
-        // setSelectedDubDirectors(selectedDubDirectorsL ? [selectedDubDirectorsL] : null);
-        //
-        // const selectedVocalsL
-        // setSelectedVocals(selectedVocalsL ? [selectedVocalsL] : null);
-        //
-        // const selectedVoiceActorsL
-        // setSelectedVoiceActors(selectedVoiceActorsL ? [selectedVoiceActorsL] : null);
     }
 
     const columns: ColumnDef<Anime>[] = [
@@ -526,263 +516,315 @@ export default function AnimePage() {
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="grid grid-cols-2 gap-4 py-4 animeDialog">
-                                <div>
-                                    <Label htmlFor="type" className="text-right">
-                                        Тип
-                                    </Label>
-                                    <div className="col-span-3">
-                                        <Popover open={openTypeSelect} onOpenChange={setOpenTypeSelect}>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    role="combobox"
-                                                    aria-expanded={openTypeSelect}
-                                                    className="w-full justify-between"
-                                                >
-                                                    {selectedType ? selectedType[0].name : "Виберіть тип..."}
-                                                    <ArrowUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-[400px] p-0">
-                                                <Command>
-                                                    <CommandInput placeholder="Пошук типу..."/>
-                                                    <CommandList>
-                                                        <CommandEmpty>Типи не знайдено.</CommandEmpty>
-                                                        <CommandGroup>
-                                                            {animeTypes.map((type) => (
-                                                                <CommandItem
-                                                                    key={type.id}
-                                                                    value={type.name}
-                                                                    onSelect={() => {
-                                                                        setSelectedType(type ? [type] : null);
-                                                                        setOpenTypeSelect(false);
-                                                                    }}
-                                                                >
-                                                                    {type.name}
-                                                                </CommandItem>
-                                                            ))}
-                                                        </CommandGroup>
-                                                    </CommandList>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                </div>
 
-                                <div>
-                                    <Label htmlFor="status" className="text-right">
-                                        Статус
-                                    </Label>
-                                    <div className="col-span-3">
-                                        <Popover open={openStatusSelect} onOpenChange={setOpenStatusSelect}>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    role="combobox"
-                                                    aria-expanded={openStatusSelect}
-                                                    className="w-full justify-between"
-                                                >
-                                                    {selectedStatus ? selectedStatus[0].name : "Виберіть статус..."}
-                                                    <ArrowUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-[400px] p-0">
-                                                <Command>
-                                                    <CommandInput placeholder="Пошук статусу..."/>
-                                                    <CommandList>
-                                                        <CommandEmpty>Статуси не знайдено.</CommandEmpty>
-                                                        <CommandGroup>
-                                                            {animeStatuses.map((status) => (
-                                                                <CommandItem
-                                                                    key={status.id}
-                                                                    value={status.name}
-                                                                    onSelect={() => {
-                                                                        setSelectedStatus(status ? [status] : null);
-                                                                        setOpenStatusSelect(false);
-                                                                    }}
-                                                                >
-                                                                    {status.name}
-                                                                </CommandItem>
-                                                            ))}
-                                                        </CommandGroup>
-                                                    </CommandList>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                </div>
+                                <DropdownSelect
+                                    label="Тип"
+                                    placeholder="Виберіть тип..."
+                                    options={animeTypes}
+                                    selected={selectedType}
+                                    setSelected={setSelectedType}
+                                />
 
-                                <div>
-                                    <Label htmlFor="source" className="text-right">
-                                        Джерело
-                                    </Label>
-                                    <div className="col-span-3">
-                                        <Popover open={openSourceSelect} onOpenChange={setOpenSourceSelect}>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    role="combobox"
-                                                    aria-expanded={openSourceSelect}
-                                                    className="w-full justify-between"
-                                                >
-                                                    {selectedSource ? selectedSource[0].name : "Виберіть джерело..."}
-                                                    <ArrowUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-[400px] p-0">
-                                                <Command>
-                                                    <CommandInput placeholder="Пошук джерела..."/>
-                                                    <CommandList>
-                                                        <CommandEmpty>Джерела не знайдено.</CommandEmpty>
-                                                        <CommandGroup>
-                                                            {animeSources.map((source) => (
-                                                                <CommandItem
-                                                                    key={source.id}
-                                                                    value={source.name}
-                                                                    onSelect={() => {
-                                                                        setSelectedSource(source ? [source] : null);
-                                                                        setOpenSourceSelect(false);
-                                                                    }}
-                                                                >
-                                                                    {source.name}
-                                                                </CommandItem>
-                                                            ))}
-                                                        </CommandGroup>
-                                                    </CommandList>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                </div>
+                                <DropdownSelect
+                                    label="Статус"
+                                    placeholder="Виберіть статус..."
+                                    options={animeStatuses}
+                                    selected={selectedStatus}
+                                    setSelected={setSelectedStatus}
+                                />
+                                <DropdownSelect
+                                    label="Джерело"
+                                    placeholder="Виберіть джерело..."
+                                    options={animeSources}
+                                    selected={selectedSource}
+                                    setSelected={setSelectedSource}
+                                />
+                                <DropdownSelect
+                                    label="Вікова категорія"
+                                    placeholder="Виберіть вікову категорію..."
+                                    options={animeAges}
+                                    selected={selectedAge}
+                                    setSelected={setSelectedAge}
+                                />
+                                <DropdownSelect
+                                    label="Студія"
+                                    placeholder="Виберіть студію..."
+                                    options={animeStudios}
+                                    selected={selectedStudio}
+                                    setSelected={setSelectedStudio}
+                                />
+                                <DropdownSelect
+                                    label="Режисер"
+                                    placeholder="Виберіть режисера..."
+                                    options={directors}
+                                    selected={selectedDirector}
+                                    setSelected={setSelectedDirector}
+                                />
+                                <DropdownSelect
+                                    label="ПОпулярність"
+                                    placeholder="Виберіть популярність..."
+                                    options={animePopularities}
+                                    selected={selectedAnimePopularity}
+                                    setSelected={setSelectedDirector}
+                                />
 
-                                <div>
-                                    <Label htmlFor="age" className="text-right">
-                                        Вікова категорія
-                                    </Label>
-                                    <div className="col-span-3">
-                                        <Popover open={openAgeSelect} onOpenChange={setOpenAgeSelect}>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    role="combobox"
-                                                    aria-expanded={openAgeSelect}
-                                                    className="w-full justify-between"
-                                                >
-                                                    {selectedAge ? selectedAge[0].name : "Виберіть вікову категорію..."}
-                                                    <ArrowUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-[400px] p-0">
-                                                <Command>
-                                                    <CommandInput placeholder="Пошук вікової категорії..."/>
-                                                    <CommandList>
-                                                        <CommandEmpty>Вікові категорії не знайдено.</CommandEmpty>
-                                                        <CommandGroup>
-                                                            {animeAges.map((age) => (
-                                                                <CommandItem
-                                                                    key={age.id}
-                                                                    value={age.name}
-                                                                    onSelect={() => {
-                                                                        setSelectedAge(age ? [age] : null);
-                                                                        setOpenAgeSelect(false);
-                                                                    }}
-                                                                >
-                                                                    {age.name}
-                                                                </CommandItem>
-                                                            ))}
-                                                        </CommandGroup>
-                                                    </CommandList>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                </div>
+                                {/*<div>*/}
+                                {/*    <Label htmlFor="type" className="text-right">*/}
+                                {/*        Тип*/}
+                                {/*    </Label>*/}
+                                {/*    <div className="col-span-3">*/}
+                                {/*        <Popover open={openTypeSelect} onOpenChange={setOpenTypeSelect}>*/}
+                                {/*            <PopoverTrigger asChild>*/}
+                                {/*                <Button*/}
+                                {/*                    variant="outline"*/}
+                                {/*                    role="combobox"*/}
+                                {/*                    aria-expanded={openTypeSelect}*/}
+                                {/*                    className="w-full justify-between"*/}
+                                {/*                >*/}
+                                {/*                    {selectedType ? selectedType[0].name : "Виберіть тип..."}*/}
+                                {/*                    <ArrowUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>*/}
+                                {/*                </Button>*/}
+                                {/*            </PopoverTrigger>*/}
+                                {/*            <PopoverContent className="w-[400px] p-0">*/}
+                                {/*                <Command>*/}
+                                {/*                    <CommandInput placeholder="Пошук типу..."/>*/}
+                                {/*                    <CommandList>*/}
+                                {/*                        <CommandEmpty>Типи не знайдено.</CommandEmpty>*/}
+                                {/*                        <CommandGroup>*/}
+                                {/*                            {animeTypes.map((type) => (*/}
+                                {/*                                <CommandItem*/}
+                                {/*                                    key={type.id}*/}
+                                {/*                                    value={type.name}*/}
+                                {/*                                    onSelect={() => {*/}
+                                {/*                                        setSelectedType(type ? [type] : null);*/}
+                                {/*                                        setOpenTypeSelect(false);*/}
+                                {/*                                    }}*/}
+                                {/*                                >*/}
+                                {/*                                    {type.name}*/}
+                                {/*                                </CommandItem>*/}
+                                {/*                            ))}*/}
+                                {/*                        </CommandGroup>*/}
+                                {/*                    </CommandList>*/}
+                                {/*                </Command>*/}
+                                {/*            </PopoverContent>*/}
+                                {/*        </Popover>*/}
+                                {/*    </div>*/}
+                                {/*</div>*/}
 
-                                <div>
-                                    <Label htmlFor="studio" className="text-right">
-                                        Студія
-                                    </Label>
-                                    <div className="col-span-3">
-                                        <Popover open={openStudioSelect} onOpenChange={setOpenStudioSelect}>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    role="combobox"
-                                                    aria-expanded={openStudioSelect}
-                                                    className="w-full justify-between"
-                                                >
-                                                    {selectedStudio ? selectedStudio[0].name : "Виберіть студію..."}
-                                                    <ArrowUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-[400px] p-0">
-                                                <Command>
-                                                    <CommandInput placeholder="Пошук студії..."/>
-                                                    <CommandList>
-                                                        <CommandEmpty>Студії не знайдено.</CommandEmpty>
-                                                        <CommandGroup>
-                                                            {animeStudios.map((studio) => (
-                                                                <CommandItem
-                                                                    key={studio.id}
-                                                                    value={studio.name}
-                                                                    onSelect={() => {
-                                                                        setSelectedStudio(studio ? [studio] : null);
-                                                                        setOpenStudioSelect(false);
-                                                                    }}
-                                                                >
-                                                                    {studio.name}
-                                                                </CommandItem>
-                                                            ))}
-                                                        </CommandGroup>
-                                                    </CommandList>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                </div>
+                                {/*<div>*/}
+                                {/*    <Label htmlFor="status" className="text-right">*/}
+                                {/*        Статус*/}
+                                {/*    </Label>*/}
+                                {/*    <div className="col-span-3">*/}
+                                {/*        <Popover open={openStatusSelect} onOpenChange={setOpenStatusSelect}>*/}
+                                {/*            <PopoverTrigger asChild>*/}
+                                {/*                <Button*/}
+                                {/*                    variant="outline"*/}
+                                {/*                    role="combobox"*/}
+                                {/*                    aria-expanded={openStatusSelect}*/}
+                                {/*                    className="w-full justify-between"*/}
+                                {/*                >*/}
+                                {/*                    {selectedStatus ? selectedStatus[0].name : "Виберіть статус..."}*/}
+                                {/*                    <ArrowUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>*/}
+                                {/*                </Button>*/}
+                                {/*            </PopoverTrigger>*/}
+                                {/*            <PopoverContent className="w-[400px] p-0">*/}
+                                {/*                <Command>*/}
+                                {/*                    <CommandInput placeholder="Пошук статусу..."/>*/}
+                                {/*                    <CommandList>*/}
+                                {/*                        <CommandEmpty>Статуси не знайдено.</CommandEmpty>*/}
+                                {/*                        <CommandGroup>*/}
+                                {/*                            {animeStatuses.map((status) => (*/}
+                                {/*                                <CommandItem*/}
+                                {/*                                    key={status.id}*/}
+                                {/*                                    value={status.name}*/}
+                                {/*                                    onSelect={() => {*/}
+                                {/*                                        setSelectedStatus(status ? [status] : null);*/}
+                                {/*                                        setOpenStatusSelect(false);*/}
+                                {/*                                    }}*/}
+                                {/*                                >*/}
+                                {/*                                    {status.name}*/}
+                                {/*                                </CommandItem>*/}
+                                {/*                            ))}*/}
+                                {/*                        </CommandGroup>*/}
+                                {/*                    </CommandList>*/}
+                                {/*                </Command>*/}
+                                {/*            </PopoverContent>*/}
+                                {/*        </Popover>*/}
+                                {/*    </div>*/}
+                                {/*</div>*/}
 
-                                <div>
-                                    <Label htmlFor="director" className="text-right">
-                                        Режисер
-                                    </Label>
-                                    <div className="col-span-3">
-                                        <Popover open={openDirectorSelect} onOpenChange={setOpenDirectorSelect}>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    role="combobox"
-                                                    aria-expanded={openDirectorSelect}
-                                                    className="w-full justify-between"
-                                                >
-                                                    {selectedDirector ? selectedDirector[0].name : "Виберіть режисера..."}
-                                                    <ArrowUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-[400px] p-0">
-                                                <Command>
-                                                    <CommandInput placeholder="Пошук режисера..."/>
-                                                    <CommandList>
-                                                        <CommandEmpty>Режисери не знайдені.</CommandEmpty>
-                                                        <CommandGroup>
-                                                            {directors.map((director) => (
-                                                                <CommandItem
-                                                                    key={director.id}
-                                                                    value={director.name}
-                                                                    onSelect={() => {
-                                                                        setSelectedDirector(director ? [director] : null);
-                                                                        setOpenDirectorSelect(false);
-                                                                    }}
-                                                                >
-                                                                    {director.name}
-                                                                </CommandItem>
-                                                            ))}
-                                                        </CommandGroup>
-                                                    </CommandList>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                </div>
+                                {/*<div>*/}
+                                {/*    <Label htmlFor="source" className="text-right">*/}
+                                {/*        Джерело*/}
+                                {/*    </Label>*/}
+                                {/*    <div className="col-span-3">*/}
+                                {/*        <Popover open={openSourceSelect} onOpenChange={setOpenSourceSelect}>*/}
+                                {/*            <PopoverTrigger asChild>*/}
+                                {/*                <Button*/}
+                                {/*                    variant="outline"*/}
+                                {/*                    role="combobox"*/}
+                                {/*                    aria-expanded={openSourceSelect}*/}
+                                {/*                    className="w-full justify-between"*/}
+                                {/*                >*/}
+                                {/*                    {selectedSource ? selectedSource[0].name : "Виберіть джерело..."}*/}
+                                {/*                    <ArrowUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>*/}
+                                {/*                </Button>*/}
+                                {/*            </PopoverTrigger>*/}
+                                {/*            <PopoverContent className="w-[400px] p-0">*/}
+                                {/*                <Command>*/}
+                                {/*                    <CommandInput placeholder="Пошук джерела..."/>*/}
+                                {/*                    <CommandList>*/}
+                                {/*                        <CommandEmpty>Джерела не знайдено.</CommandEmpty>*/}
+                                {/*                        <CommandGroup>*/}
+                                {/*                            {animeSources.map((source) => (*/}
+                                {/*                                <CommandItem*/}
+                                {/*                                    key={source.id}*/}
+                                {/*                                    value={source.name}*/}
+                                {/*                                    onSelect={() => {*/}
+                                {/*                                        setSelectedSource(source ? [source] : null);*/}
+                                {/*                                        setOpenSourceSelect(false);*/}
+                                {/*                                    }}*/}
+                                {/*                                >*/}
+                                {/*                                    {source.name}*/}
+                                {/*                                </CommandItem>*/}
+                                {/*                            ))}*/}
+                                {/*                        </CommandGroup>*/}
+                                {/*                    </CommandList>*/}
+                                {/*                </Command>*/}
+                                {/*            </PopoverContent>*/}
+                                {/*        </Popover>*/}
+                                {/*    </div>*/}
+                                {/*</div>*/}
+
+                                {/*<div>*/}
+                                {/*    <Label htmlFor="age" className="text-right">*/}
+                                {/*        Вікова категорія*/}
+                                {/*    </Label>*/}
+                                {/*    <div className="col-span-3">*/}
+                                {/*        <Popover open={openAgeSelect} onOpenChange={setOpenAgeSelect}>*/}
+                                {/*            <PopoverTrigger asChild>*/}
+                                {/*                <Button*/}
+                                {/*                    variant="outline"*/}
+                                {/*                    role="combobox"*/}
+                                {/*                    aria-expanded={openAgeSelect}*/}
+                                {/*                    className="w-full justify-between"*/}
+                                {/*                >*/}
+                                {/*                    {selectedAge ? selectedAge[0].name : "Виберіть вікову категорію..."}*/}
+                                {/*                    <ArrowUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>*/}
+                                {/*                </Button>*/}
+                                {/*            </PopoverTrigger>*/}
+                                {/*            <PopoverContent className="w-[400px] p-0">*/}
+                                {/*                <Command>*/}
+                                {/*                    <CommandInput placeholder="Пошук вікової категорії..."/>*/}
+                                {/*                    <CommandList>*/}
+                                {/*                        <CommandEmpty>Вікові категорії не знайдено.</CommandEmpty>*/}
+                                {/*                        <CommandGroup>*/}
+                                {/*                            {animeAges.map((age) => (*/}
+                                {/*                                <CommandItem*/}
+                                {/*                                    key={age.id}*/}
+                                {/*                                    value={age.name}*/}
+                                {/*                                    onSelect={() => {*/}
+                                {/*                                        setSelectedAge(age ? [age] : null);*/}
+                                {/*                                        setOpenAgeSelect(false);*/}
+                                {/*                                    }}*/}
+                                {/*                                >*/}
+                                {/*                                    {age.name}*/}
+                                {/*                                </CommandItem>*/}
+                                {/*                            ))}*/}
+                                {/*                        </CommandGroup>*/}
+                                {/*                    </CommandList>*/}
+                                {/*                </Command>*/}
+                                {/*            </PopoverContent>*/}
+                                {/*        </Popover>*/}
+                                {/*    </div>*/}
+                                {/*</div>*/}
+
+                                {/*<div>*/}
+                                {/*    <Label htmlFor="studio" className="text-right">*/}
+                                {/*        Студія*/}
+                                {/*    </Label>*/}
+                                {/*    <div className="col-span-3">*/}
+                                {/*        <Popover open={openStudioSelect} onOpenChange={setOpenStudioSelect}>*/}
+                                {/*            <PopoverTrigger asChild>*/}
+                                {/*                <Button*/}
+                                {/*                    variant="outline"*/}
+                                {/*                    role="combobox"*/}
+                                {/*                    aria-expanded={openStudioSelect}*/}
+                                {/*                    className="w-full justify-between"*/}
+                                {/*                >*/}
+                                {/*                    {selectedStudio ? selectedStudio[0].name : "Виберіть студію..."}*/}
+                                {/*                    <ArrowUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>*/}
+                                {/*                </Button>*/}
+                                {/*            </PopoverTrigger>*/}
+                                {/*            <PopoverContent className="w-[400px] p-0">*/}
+                                {/*                <Command>*/}
+                                {/*                    <CommandInput placeholder="Пошук студії..."/>*/}
+                                {/*                    <CommandList>*/}
+                                {/*                        <CommandEmpty>Студії не знайдено.</CommandEmpty>*/}
+                                {/*                        <CommandGroup>*/}
+                                {/*                            {animeStudios.map((studio) => (*/}
+                                {/*                                <CommandItem*/}
+                                {/*                                    key={studio.id}*/}
+                                {/*                                    value={studio.name}*/}
+                                {/*                                    onSelect={() => {*/}
+                                {/*                                        setSelectedStudio(studio ? [studio] : null);*/}
+                                {/*                                        setOpenStudioSelect(false);*/}
+                                {/*                                    }}*/}
+                                {/*                                >*/}
+                                {/*                                    {studio.name}*/}
+                                {/*                                </CommandItem>*/}
+                                {/*                            ))}*/}
+                                {/*                        </CommandGroup>*/}
+                                {/*                    </CommandList>*/}
+                                {/*                </Command>*/}
+                                {/*            </PopoverContent>*/}
+                                {/*        </Popover>*/}
+                                {/*    </div>*/}
+                                {/*</div>*/}
+
+                                {/*<div>*/}
+                                {/*    <Label htmlFor="director" className="text-right">*/}
+                                {/*        Режисер*/}
+                                {/*    </Label>*/}
+                                {/*    <div className="col-span-3">*/}
+                                {/*        <Popover open={openDirectorSelect} onOpenChange={setOpenDirectorSelect}>*/}
+                                {/*            <PopoverTrigger asChild>*/}
+                                {/*                <Button*/}
+                                {/*                    variant="outline"*/}
+                                {/*                    role="combobox"*/}
+                                {/*                    aria-expanded={openDirectorSelect}*/}
+                                {/*                    className="w-full justify-between"*/}
+                                {/*                >*/}
+                                {/*                    {selectedDirector ? selectedDirector[0].name : "Виберіть режисера..."}*/}
+                                {/*                    <ArrowUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>*/}
+                                {/*                </Button>*/}
+                                {/*            </PopoverTrigger>*/}
+                                {/*            <PopoverContent className="w-[400px] p-0">*/}
+                                {/*                <Command>*/}
+                                {/*                    <CommandInput placeholder="Пошук режисера..."/>*/}
+                                {/*                    <CommandList>*/}
+                                {/*                        <CommandEmpty>Режисери не знайдені.</CommandEmpty>*/}
+                                {/*                        <CommandGroup>*/}
+                                {/*                            {directors.map((director) => (*/}
+                                {/*                                <CommandItem*/}
+                                {/*                                    key={director.id}*/}
+                                {/*                                    value={director.name}*/}
+                                {/*                                    onSelect={() => {*/}
+                                {/*                                        setSelectedDirector(director ? [director] : null);*/}
+                                {/*                                        setOpenDirectorSelect(false);*/}
+                                {/*                                    }}*/}
+                                {/*                                >*/}
+                                {/*                                    {director.name}*/}
+                                {/*                                </CommandItem>*/}
+                                {/*                            ))}*/}
+                                {/*                        </CommandGroup>*/}
+                                {/*                    </CommandList>*/}
+                                {/*                </Command>*/}
+                                {/*            </PopoverContent>*/}
+                                {/*        </Popover>*/}
+                                {/*    </div>*/}
+                                {/*</div>*/}
 
                                 <div>
                                     <Label htmlFor="nameUkr" className="text-right">
@@ -822,7 +864,7 @@ export default function AnimePage() {
                                     <Label htmlFor="episodesExpected" className="text-right">
                                         Очікується епізодів
                                     </Label>
-                                    <InputOTP maxLength={2}
+                                    <InputOTP maxLength={3}
                                               id="episodesExpected"
                                               value={String(formData.episodesExpected || 0)}
                                               onChange={(e) => setFormData({...formData, episodesExpected: Number(e)})}
@@ -830,6 +872,7 @@ export default function AnimePage() {
                                         <InputOTPGroup>
                                             <InputOTPSlot index={0}/>
                                             <InputOTPSlot index={1}/>
+                                            <InputOTPSlot index={2}/>
                                         </InputOTPGroup>
                                     </InputOTP>
                                 </div>
@@ -1221,6 +1264,48 @@ export default function AnimePage() {
                                 </Popover>
                             </div>
                         </div>
+                        <div>
+                            <Label htmlFor="director" className="text-right">
+                                Популярність
+                            </Label>
+                            <div className="col-span-3">
+                                <Popover open={openPopularitySelect} onOpenChange={setOpenPopularitySelect}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={openPopularitySelect}
+                                            className="w-full justify-between"
+                                        >
+                                            {selectedAnimePopularity ? selectedAnimePopularity[0].name : "Виберіть популярність..."}
+                                            <ArrowUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[400px] p-0">
+                                        <Command>
+                                            <CommandInput placeholder="Пошук режисера..."/>
+                                            <CommandList>
+                                                <CommandEmpty>Популярність не знайдено.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {animePopularities.map((pop) => (
+                                                        <CommandItem
+                                                            key={pop.id}
+                                                            value={pop.name}
+                                                            onSelect={() => {
+                                                                setSelectedAnimePopularity(pop ? [pop] : null);
+                                                                setOpenPopularitySelect(false);
+                                                            }}
+                                                        >
+                                                            {pop.name}
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+                        </div>
 
                         <div>
                             <Label htmlFor="nameUkr" className="text-right">
@@ -1261,7 +1346,7 @@ export default function AnimePage() {
                                 Очікується епізодів
                             </Label>
 
-                            <InputOTP maxLength={2}
+                            <InputOTP maxLength={3}
                                       id="episodesExpected"
                                       value={String(formData.episodesExpected || 0)}
                                       onChange={(e) => setFormData({...formData, episodesExpected: Number(e)})}
@@ -1269,6 +1354,7 @@ export default function AnimePage() {
                                 <InputOTPGroup>
                                     <InputOTPSlot index={0}/>
                                     <InputOTPSlot index={1}/>
+                                    <InputOTPSlot index={2}/>
                                 </InputOTPGroup>
                             </InputOTP>
                         </div>
@@ -1376,7 +1462,8 @@ export default function AnimePage() {
                 <DialogContent className="sm:max-w-[1225px]">
                     <DialogHeader>
                         <DialogTitle>Призначення зв&#39;язків</DialogTitle>
-                        <DialogDescription>Виберіть жанри, перекладачів, редакторів, звукорежисерів та інших учасників.</DialogDescription>
+                        <DialogDescription>Виберіть жанри, перекладачів, редакторів, звукорежисерів та інших
+                            учасників.</DialogDescription>
                     </DialogHeader>
                     <div className="grid grid-cols-2 gap-4 py-4 animeDialog">
                         {/* Вибір жанрів */}

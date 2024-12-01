@@ -94,8 +94,19 @@ export default async function WatchPage({
                                 <div className="w-full h-auto" style={{aspectRatio: '11 / 16'}}>
                                     <img alt="" src={animeDataEx[0].headerImage || ""} className="w-full h-full object-cover" />
                                 </div>
-                                <span
-                                    className="absolute right-0 p-3 rounded-bl-2xl bg-white text-red-900">{animeDataEx[0].existedEpisodes} / {animeDataEx[0].episodesExpected}</span>
+                                {animeDataEx[0].episodesExpected && animeDataEx[0].episodesExpected > 0 ?
+
+                                    (
+                                        <span
+                                            className="absolute right-0 p-3 rounded-bl-2xl bg-white text-red-900">
+                                            {animeDataEx[0].existedEpisodes} / {animeDataEx[0].episodesExpected}
+                                    </span>
+                                    ) :
+                                    <span
+                                        className="absolute right-0 p-3 rounded-bl-2xl bg-white text-red-900">
+                                            Фільм
+                                    </span>}
+
                                 <span
                                     className={cn(
                                         'absolute left-0 p-3 rounded-br-2xl',
@@ -139,10 +150,15 @@ export default async function WatchPage({
                                 <span>Тип</span>
                                 <span className="row_v">{animeDataEx[0].typeName}</span>
                             </div>
+                            {animeDataEx[0].episodesExpected && animeDataEx[0].episodesExpected > 0 ?
+
+                                (
                             <div >
                                 <span>Епізоди</span>
                                 <span className="row_v">{animeDataEx[0].existedEpisodes} / {animeDataEx[0].episodesExpected}</span>
                             </div>
+                                ): null}
+
                             <div >
                                 <span>Статус</span>
                                 <span className="row_v mb-1">

@@ -75,6 +75,8 @@ export const PlayerProvider = ({
 
     const toggleAutoplay = (checked: boolean) => {
         setAutoplayEnabled(checked);
+
+        localStorage.setItem('autoplayEnabled', JSON.stringify(checked));
     };
 
     const loadEpisodes = useCallback(async (animeId: string) => {
@@ -96,6 +98,11 @@ export const PlayerProvider = ({
     useEffect(() => {
         if (watchId) {
             loadEpisodes(watchId);
+
+            const autoplayEnabled = localStorage.getItem('autoplayEnabled');
+            if (autoplayEnabled) {
+                setAutoplayEnabled(JSON.parse(autoplayEnabled) as boolean)
+            }
         }
 
     }, [loadEpisodes, watchId]);

@@ -1,6 +1,6 @@
 "use client"
 
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/main/data-table";
 import {
@@ -31,12 +31,12 @@ import {
 } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    addAge,
+    addAge, addAnimePopularity,
     addDirector, addSource, addStatus, addStudio,
-    addType, deleteAge,
-    deleteDirector, deleteSource, deleteStatus, deleteStudio, deleteType, getAllAges,
+    addType, deleteAge, deleteAnimePopularity,
+    deleteDirector, deleteSource, deleteStatus, deleteStudio, deleteType, getAllAges, getAllAnimePopularity,
     getAllDirectors, getAllSources, getAllStatuses, getAllStudios,
-    getAllTypes, updateAge,
+    getAllTypes, updateAge, updateAnimePopularity,
     updateDirector, updateSource, updateStatus, updateStudio,
     updateType
 } from "@/lib/db/admin";
@@ -65,7 +65,7 @@ export default function AnimeGroupPage() {
     const [currentTab, setCurrentTab] = useState("directors");
 
     // Конфігурація для кожної вкладки
-    const tabConfigs: Record<string, TabConfig> = {
+    const tabConfigs: Record<string, TabConfig> = useMemo(() => ({
         directors: {
             key: "directors",
             label: "Режисери",
@@ -73,6 +73,14 @@ export default function AnimeGroupPage() {
             addFunction: addDirector,
             updateFunction: updateDirector,
             deleteFunction: deleteDirector,
+        },
+        studios: {
+            key: "studios",
+            label: "Студії",
+            getFunction: getAllStudios,
+            addFunction: addStudio,
+            updateFunction: updateStudio,
+            deleteFunction: deleteStudio,
         },
         types: {
             key: "types",
@@ -106,15 +114,15 @@ export default function AnimeGroupPage() {
             updateFunction: updateAge,
             deleteFunction: deleteAge,
         },
-        studios: {
-            key: "studios",
-            label: "Студії",
-            getFunction: getAllStudios,
-            addFunction: addStudio,
-            updateFunction: updateStudio,
-            deleteFunction: deleteStudio,
+        animePop: {
+            key: "animePop",
+            label: "Популярність",
+            getFunction: getAllAnimePopularity,
+            addFunction: addAnimePopularity,
+            updateFunction: updateAnimePopularity,
+            deleteFunction: deleteAnimePopularity,
         }
-    };
+    }), []);
 
     const fetchItems = useCallback(async () => {
         const config = tabConfigs[currentTab];
@@ -162,7 +170,7 @@ export default function AnimeGroupPage() {
         }
     };
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = useCallback((id: number) => (async () => {
         try {
             const config = tabConfigs[currentTab];
             await config.deleteFunction(id);
@@ -170,9 +178,9 @@ export default function AnimeGroupPage() {
         } catch (error) {
             console.error(`Помилка при видаленні запису:`, error);
         }
-    };
+    }) , [currentTab, fetchItems, tabConfigs]);
 
-    const columns: ColumnDef<ReferenceItem>[] = [
+    const columns: ColumnDef<ReferenceItem>[] = useMemo(() => [
         {
             accessorKey: "id",
             header: "ID",
@@ -216,12 +224,12 @@ export default function AnimeGroupPage() {
                 );
             },
         },
-    ];
+    ], [handleDelete]);
 
     return (
         <div className="w-full p-4">
             <Tabs defaultValue="directors" onValueChange={setCurrentTab}>
-                <TabsList className="grid grid-cols-6 w-full">
+                <TabsList className="grid grid-cols-7 w-full">
                     {Object.values(tabConfigs).map(config => (
                         <TabsTrigger key={config.key} value={config.key}>
                             {config.label}
@@ -229,7 +237,7 @@ export default function AnimeGroupPage() {
                     ))}
                 </TabsList>
 
-                {Object.values(tabConfigs).map(config => (
+                {Object.values(tabConfigs).map((config) => (
                     <TabsContent key={config.key} value={config.key}>
                         <Card>
                             <CardContent className="p-6">

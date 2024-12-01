@@ -21,11 +21,10 @@ import {
     memberTable,
     userTable
 } from "@/lib/db/schema";
-import {eq, sql} from "drizzle-orm";
+import {eq, like, sql} from "drizzle-orm";
 import { hashPassword, verifyPassword } from "@/lib/auth/jwt";
 import {AnimeData} from "@/components/types/anime-types";
 import {User} from "@/components/types/user"; // adjust the import path as needed
-
 
 
 export async function userRegister(values: {
@@ -275,11 +274,35 @@ export async function getCharactersByActorId(searchUserId: number, searchFromAni
             // Спочатку сортуємо, якщо animeId відповідає searchFromAnime
             sql`CASE WHEN ${characterTable.animeId} = ${searchFromAnime} THEN 0 ELSE 1 END`,
             // Далі сортуємо за popularityId
-            characterTable.popularityId
+            characterTable.popularityId,
         )
         .limit(8);
 }
 
 export async function getArtByUser(searchUserId: number) {
     return db.select({ uart: userTable.art, nickname: userTable.nickname }).from(userTable).where(eq(userTable.userId, searchUserId));
+}
+
+export async function getPopularAnimeBySearch(searchQuery: string) {
+    return db.select({
+
+        animeId: animeTable.animeId,
+        nameUkr: animeTable.nameUkr,
+        episodesExpected: animeTable.episodesExpected,
+        headerImage: animeTable.headerImage,
+
+        statusName: animeStatusTable.statusName,
+        statusId: animeTable.statusId,
+
+        existedEpisodes: db.$count(animeEpisodeTable, eq(animeEpisodeTable.animeId, animeTable.animeId)),
+
+    })
+        .from(animeTable)
+        .leftJoin(animeStatusTable, eq(animeStatusTable.statusId, animeTable.statusId))
+        .where(like(animeTable.nameUkr, `%${searchQuery}%`) ) // Додаємо фільтрацію по назві аніме
+        .orderBy(
+            animeTable.animePopularityId,
+            animeTable.statusId,
+        )
+        .limit(9);
 }

@@ -18,6 +18,7 @@ export type Anime = {
     trailerLink: string | null;
     headerImage: string | null;
     shortDescription: string | null;
+    popularity: number | null;
 };
 
 export type AnimeType = {

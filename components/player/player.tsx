@@ -1,7 +1,7 @@
 // components/Player.js
 "use client";
 
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { usePlayer } from "@/components/player/player-context";
 import { BsSkipEndFill, BsPlayFill, BsPauseFill,
     BsVolumeUpFill, BsVolumeMuteFill, } from "react-icons/bs";
@@ -12,8 +12,8 @@ import {Button} from "@/components/ui/button";
 
 import "./player.css";
 import Image from "next/image";
-import {Slider} from "@/components/ui/slider";
-import {Switch} from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 
 interface VideoProgress {
     watchId: string;
@@ -25,7 +25,7 @@ interface VideoProgress {
 const Player = () => {
     const {
         currentVideo,
-        isPlaying,playNextEpisode,
+        playNextEpisode,
         autoplayEnabled,
         toggleAutoplay,
         currentEpisode,
@@ -69,6 +69,7 @@ const Player = () => {
             JSON.stringify(progress)
         );
     }, [currentEpisode, watchId]);
+
     const getVideoProgress = (): number | null => {
         if (!watchId || !currentEpisode) return null;
 
@@ -82,9 +83,6 @@ const Player = () => {
 
         return progress.timestamp;
     };
-    // const handleBeforeUnload = () => {
-    //     saveVideoProgress();
-    // };
     
     useEffect(() => {
         progressInterval.current = setInterval(saveVideoProgress, 10000);
@@ -230,7 +228,6 @@ const Player = () => {
         const rect = target.getBoundingClientRect();
         const offsetX = e.clientX - rect.left; // відстань від лівої межі
         const percent = Math.min(Math.max(0, offsetX), rect.width) / rect.width;
-        console.log("Початкове: ", percent);
         // Якщо починається перетягування
         if ((e.buttons & 1) === 1) {
             startDragging();
@@ -244,7 +241,6 @@ const Player = () => {
             if (videoRef.current) {
                 // Тут важливо перерахувати час відео на відсоток
                 videoRef.current.currentTime = percent * videoRef.current.duration;
-                console.log("Кінцеве: ", percent);
                 if (!wasPaused) videoRef.current.play().then(() => {});
             }
         }
@@ -408,7 +404,8 @@ const Player = () => {
 
 
     return (
-        <div className="w-full aspect-video video_container paused" data-volume="up" ref={controlsRef}>
+        <div>
+            <div className="w-full aspect-video video_container paused" data-volume="up" ref={controlsRef}>
 
             <div className="absolute left-0 right-0 bottom-0 top-0 episodePlayerName">
                 <p className="p-6 relative z-[2]">{currentEpisode?.episodeNumber || "Назва серії"}. {currentEpisode?.episodeName}</p>
@@ -496,7 +493,7 @@ const Player = () => {
             </div>
 
             {/* Ваша логіка для відтворення відео */}
-            <video ref={videoRef} src={currentVideo} autoPlay={isPlaying} className="media_player w-full"
+            <video ref={videoRef} src={currentVideo} autoPlay={false} className="media_player w-full"
                    onClick={() => togglePlay()} onVolumeChange={volumeChange} onTimeUpdate={() => {
                 if (timelineContainerRef.current && videoRef.current) {
                     const percent = videoRef.current.currentTime / videoRef.current.duration;
@@ -510,11 +507,14 @@ const Player = () => {
                        if (!videoRef.current) return;
 
                        const savedProgress = getVideoProgress();
-                       if (savedProgress !== null) {
-                           videoRef.current.currentTime = savedProgress;
+                       if (savedProgress !== null && (savedProgress + 15) < videoRef.current.duration) {
+                           videoRef.current.currentTime = savedProgress - 5;
                        }
                    }}
             />
+        </div>
+            {/*<div className="w-[200px] h-[200px] bg-red-500 position fixed top-0 left-0">*/}
+            {/*</div>*/}
         </div>
     );
 };

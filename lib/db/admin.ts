@@ -6,7 +6,7 @@ import {
     animeDubDirectorTable,
     animeEditingTable,
     animeEpisodeTable,
-    animeGenreTable,
+    animeGenreTable, animePopularityTable,
     animeSoundTable,
     animeSourceTable,
     animeStatusTable,
@@ -325,6 +325,37 @@ export async function deleteStudio(studioId: number) {
         .returning({ id: animeStudioTable.studioId });
 }
 
+
+export async function getAllAnimePopularity() {
+    return db.select({
+        id: animePopularityTable.popularityId,
+        name: animePopularityTable.popularity,
+    }).from(animePopularityTable);
+}
+
+export async function addAnimePopularity(popularity: string) {
+    return db.insert(animePopularityTable)
+        .values({ popularity })
+        .returning({ id: animePopularityTable.popularityId });
+}
+
+export async function updateAnimePopularity(popularityId: number, popularity: string) {
+    return db.update(animePopularityTable)
+        .set({ popularity })
+        .where(eq(animePopularityTable.popularityId, popularityId))
+        .returning({ id: animePopularityTable.popularityId });
+}
+
+export async function deleteAnimePopularity(popularityId: number) {
+    return db.delete(animePopularityTable)
+        .where(eq(animePopularityTable.popularityId, popularityId))
+        .returning({ id: animePopularityTable.popularityId });
+}
+
+
+
+
+
 // Search functions (if needed)
 export async function searchDirectors(query: string) {
     return db.select()
@@ -386,6 +417,8 @@ export async function getAllAnime(): Promise<Anime[]> {
         trailerLink: animeTable.trailerLink,
         headerImage: animeTable.headerImage,
         shortDescription: animeTable.shortDescription,
+        popularity: animeTable.animePopularityId,
+
     }).from(animeTable).leftJoin(animeStatusTable, eq(animeTable.statusId, animeStatusTable.statusId));
 }
 
@@ -398,6 +431,7 @@ export async function updateAnime(
     ageId: number,
     studioId: number,
     directorId: number,
+    animePopularityId: number,
     nameUkr: string,
     nameJap: string,
     nameEng: string,
@@ -427,6 +461,7 @@ export async function updateAnime(
             trailerLink,
             headerImage,
             shortDescription,
+            animePopularityId,
         })
         .where(eq(animeTable.animeId, animeId));
 }
@@ -444,6 +479,7 @@ export async function addAnime(
     ageId: number,
     studioId: number,
     directorId: number,
+    animePopularityId: number,
     nameUkr: string,
     nameJap: string,
     nameEng: string,
@@ -472,6 +508,7 @@ export async function addAnime(
         trailerLink: trailerLink,
         headerImage: headerImage,
         shortDescription: shortDescription,
+        animePopularityId: animePopularityId,
     })
 }
 
@@ -828,7 +865,7 @@ export async function saveAssociationsToDatabase({
 
 
 export async function getAllAnimeData() {
-    const [animes, types, statuses, sources, ages, studios, directors] = await Promise.all([
+    const [animes, types, statuses, sources, ages, studios, directors, animePopularitys] = await Promise.all([
         db.select({
             animeId: animeTable.animeId,
             typeId: animeTable.typeId,
@@ -848,6 +885,7 @@ export async function getAllAnimeData() {
             trailerLink: animeTable.trailerLink,
             headerImage: animeTable.headerImage,
             shortDescription: animeTable.shortDescription,
+            popularity: animeTable.animePopularityId,
 
         }).from(animeTable).leftJoin(animeStatusTable, eq(animeTable.statusId, animeStatusTable.statusId)),
 
@@ -879,7 +917,12 @@ export async function getAllAnimeData() {
         db.select({
             id: directorTable.directorId,
             name: directorTable.directorName,
-        }).from(directorTable)
+        }).from(directorTable),
+
+        db.select({
+            id: animePopularityTable.popularityId,
+            name: animePopularityTable.popularity,
+        }).from(animePopularityTable)
     ]);
 
     return {
@@ -889,6 +932,7 @@ export async function getAllAnimeData() {
         sources,
         ages,
         studios,
-        directors
+        directors,
+        animePopularitys
     };
 }

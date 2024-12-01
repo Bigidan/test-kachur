@@ -30,6 +30,11 @@ export const animeStudioTable = sqliteTable('anime_studio', {
     studioName: text('studio_name').notNull(),
 });
 
+export const animePopularityTable = sqliteTable('anime_popularity', {
+    popularityId: integer('popularity_id').primaryKey(),
+    popularity: text('popularity').notNull(),
+});
+
 export const animeTable = sqliteTable('anime', {
     animeId: integer('anime_id').primaryKey(),
     directorId: integer('director_id', { mode: 'number' }).references(() => directorTable.directorId),
@@ -48,6 +53,7 @@ export const animeTable = sqliteTable('anime', {
     trailerLink: text('trailer_link'),
     headerImage: text('header_image'),
     shortDescription: text('short_description'),
+    animePopularityId: integer('anime_popularity_id', { mode: 'number' }).references(() => animePopularityTable.popularityId),
 });
 
 export const genreTable = sqliteTable('genre', {
@@ -148,13 +154,3 @@ export const animeDubDirectorTable = sqliteTable('anime_dub_director', {
 });
 
 
-export const animePopularityTable = sqliteTable('anime_popularity', {
-    popularityId: integer('popularity_id').primaryKey(),
-    popularity: text('popularity').notNull(),
-});
-
-
-export const animeAnimePopularityTable = sqliteTable('anime_anime_popularity', {
-    animeId: integer('anime_id', { mode: 'number' }).references(() => animeTable.animeId),
-    animePopularityId: integer('anime_popularity_id', { mode: 'number' }).references(() => animePopularityTable.popularityId),
-});
