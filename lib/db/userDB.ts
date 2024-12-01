@@ -21,7 +21,7 @@ import {
     memberTable,
     userTable
 } from "@/lib/db/schema";
-import {eq, sql} from "drizzle-orm";
+import {eq, like, or, sql} from "drizzle-orm";
 import { hashPassword, verifyPassword } from "@/lib/auth/jwt";
 import {AnimeData} from "@/components/types/anime-types";
 import {User} from "@/components/types/user"; // adjust the import path as needed
@@ -283,6 +283,7 @@ export async function getArtByUser(searchUserId: number) {
     return db.select({ uart: userTable.art, nickname: userTable.nickname }).from(userTable).where(eq(userTable.userId, searchUserId));
 }
 
+
 export async function getPopularAnimeBySearch(searchQuery: string) {
     return db.select({
 
@@ -299,7 +300,12 @@ export async function getPopularAnimeBySearch(searchQuery: string) {
     })
         .from(animeTable)
         .leftJoin(animeStatusTable, eq(animeStatusTable.statusId, animeTable.statusId))
-        .where(sql`LOWER(${animeTable.nameUkr}) LIKE LOWER(${'%'+searchQuery+'%'})`) // Додаємо фільтрацію по назві аніме
+        .where(
+            or(
+                (like(animeTable.nameUkr, `%${searchQuery}%`)),
+                (like(animeTable.nameEng, `%${searchQuery}%`))
+            )
+        ) // Додаємо фільтрацію по назві аніме
         .orderBy(
             animeTable.animePopularityId,
             animeTable.statusId,
