@@ -21,7 +21,7 @@ import {
     memberTable,
     userTable
 } from "@/lib/db/schema";
-import {eq, ilike, sql} from "drizzle-orm";
+import {eq, sql} from "drizzle-orm";
 import { hashPassword, verifyPassword } from "@/lib/auth/jwt";
 import {AnimeData} from "@/components/types/anime-types";
 import {User} from "@/components/types/user"; // adjust the import path as needed
@@ -299,7 +299,7 @@ export async function getPopularAnimeBySearch(searchQuery: string) {
     })
         .from(animeTable)
         .leftJoin(animeStatusTable, eq(animeStatusTable.statusId, animeTable.statusId))
-        .where(ilike(animeTable.nameUkr, `%${searchQuery}%`) ) // Додаємо фільтрацію по назві аніме
+        .where(sql`LOWER(${animeTable.nameUkr}) LIKE LOWER(${'%'+searchQuery+'%'})`) // Додаємо фільтрацію по назві аніме
         .orderBy(
             animeTable.animePopularityId,
             animeTable.statusId,
