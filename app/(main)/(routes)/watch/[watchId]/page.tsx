@@ -12,6 +12,10 @@ import Image from "next/image";
 import StaffHoverCard from "@/components/watch/member-hover-card";
 import {cn} from "@/lib/utils";
 import {notFound} from "next/navigation";
+import CommentInput from "@/components/watch/comment-input";
+import {getSession} from "@/lib/auth/session";
+import {User as UserType} from "@/components/types/user";
+import CommentsContent from "@/components/watch/comments-content";
 
 
 
@@ -21,6 +25,9 @@ export default async function WatchPage({
 }: {
     params: Promise<{ watchId: string }>
 }){
+
+    const parsed = await getSession();
+    const user = parsed?.user as UserType;
 
     const watchId = (await params).watchId;
     if (isNaN(Number(watchId))) return notFound();
@@ -251,7 +258,13 @@ export default async function WatchPage({
                         </div>
                     </PlayerProvider>
 
-                    <div className="hero">
+                    <div className="hero mt-24">
+
+                        <HeadTitle highlight="Коментарі" className="text-3xl" />
+
+                        <CommentInput user={user} animeId={Number(watchId)} />
+
+                        <CommentsContent animeId={Number(watchId)}/>
 
                     </div>
                 </div>

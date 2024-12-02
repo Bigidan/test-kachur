@@ -1,4 +1,5 @@
 // types.ts
+
 export type Anime = {
     animeId: number;
     typeId: number | null;
@@ -125,4 +126,24 @@ export interface AnimeData {
         memberId: number | null,
         userId: number | null,
     }[];
+}
+
+
+export interface CommentsType {
+    comment: {
+        commentId: number;
+        animeId: number | null;
+        userId: number | null;
+        parentCommentId: number | null;
+        comment: string | null;
+        updateDate: Date;
+    },
+    user: {
+        userId: number | null,
+        nickname: string | null,
+        name: string | null,
+        image: string | null,
+        role: number | null,
+        roleDescription: string | null,
+    } | null,
 }

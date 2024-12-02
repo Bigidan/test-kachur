@@ -296,7 +296,7 @@ const Player = () => {
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             const tagName = document?.activeElement?.tagName?.toLowerCase();
-            if (tagName === "input") return;
+            if (tagName === "textarea") return;
 
             switch (event.key.toLowerCase()) {
                 case " ":

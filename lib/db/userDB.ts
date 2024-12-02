@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db"; // adjust the import path as needed
 import {
-    animeAgeTable,
+    animeAgeTable, animeCommentsTable,
     animeDubDirectorTable,
     animeEditingTable, animeEpisodeTable,
     animeGenreTable,
@@ -18,12 +18,12 @@ import {
     animeVoiceActorsTable, characterTable,
     directorTable, episodeTable,
     genreTable,
-    memberTable,
+    memberTable, roleTable,
     userTable
 } from "@/lib/db/schema";
-import {eq, like, or, sql} from "drizzle-orm";
+import {desc, eq, like, or, sql} from "drizzle-orm";
 import { hashPassword, verifyPassword } from "@/lib/auth/jwt";
-import {AnimeData} from "@/components/types/anime-types";
+import { AnimeData, CommentsType} from "@/components/types/anime-types";
 import {User} from "@/components/types/user"; // adjust the import path as needed
 
 
@@ -311,4 +311,42 @@ export async function getPopularAnimeBySearch(searchQuery: string) {
             animeTable.statusId,
         )
         .limit(9);
+}
+
+export async function getComments(animeId: number): Promise<CommentsType[]>{
+    return db.select({
+        comment: animeCommentsTable,
+        user: {
+            userId: userTable.userId,
+            nickname: userTable.nickname,
+            name: userTable.name,
+            image: userTable.image,
+            role: userTable.roleId,
+            roleDescription: roleTable.description,
+        }
+    }).from(animeCommentsTable)
+        .where(eq(animeCommentsTable.animeId, animeId))
+        .orderBy(desc(animeCommentsTable.commentId))
+        .limit(9)
+        .leftJoin(userTable, eq(userTable.userId, animeCommentsTable.userId))
+        .leftJoin(roleTable, eq(roleTable.roleId, userTable.roleId));
+}
+
+export async function sendComment(comment: {
+    animeId: number;
+    userId: number | null;
+    parentCommentId: number | null;
+    comment: string;
+    updateDate: Date;
+}) {
+
+    await db.insert(animeCommentsTable).values({
+        animeId: comment.animeId,
+        userId: comment.userId || null,
+        parentCommentId: comment.parentCommentId,
+        comment: comment.comment,
+        updateDate: new Date(),
+        isDeleted: false,
+    });
+
 }

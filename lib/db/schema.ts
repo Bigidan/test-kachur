@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text, AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
 
 export const directorTable = sqliteTable('director', {
     directorId: integer('director_id').primaryKey(),
@@ -54,6 +54,7 @@ export const animeTable = sqliteTable('anime', {
     headerImage: text('header_image'),
     shortDescription: text('short_description'),
     animePopularityId: integer('anime_popularity_id', { mode: 'number' }).references(() => animePopularityTable.popularityId),
+    ducks: integer('ducks', { mode: 'number' }),
 });
 
 export const genreTable = sqliteTable('genre', {
@@ -151,6 +152,18 @@ export const animeVocalsTable = sqliteTable('anime_vocals', {
 export const animeDubDirectorTable = sqliteTable('anime_dub_director', {
     animeId: integer('anime_id', { mode: 'number' }).references(() => animeTable.animeId),
     memberId: integer('member_id', { mode: 'number' }).references(() => memberTable.memberId),
+});
+
+
+
+export const animeCommentsTable = sqliteTable('anime_comments', {
+    commentId: integer('comment_id').primaryKey(),
+    animeId: integer('anime_id', { mode: 'number' }).references(() => animeTable.animeId),
+    userId: integer('user_id', { mode: 'number' }).references(() => userTable.userId),
+    parentCommentId: integer('parent_comment_id', { mode: 'number'}).references((): AnySQLiteColumn => animeCommentsTable.commentId),
+    comment: text('comment'),
+    updateDate: integer('release_date', { mode: 'timestamp' }).notNull(),
+    isDeleted: integer('is_deleted', { mode: 'boolean' }).notNull(),
 });
 
 
