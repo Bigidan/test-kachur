@@ -12,12 +12,10 @@ import Image from "next/image";
 import StaffHoverCard from "@/components/watch/member-hover-card";
 import {cn} from "@/lib/utils";
 import {notFound} from "next/navigation";
-import CommentInput from "@/components/watch/comment-input";
 import {getSession} from "@/lib/auth/session";
 import {User as UserType} from "@/components/types/user";
-import CommentsContent from "@/components/watch/comments-content";
 
-
+import CommentsSection from "@/components/watch/comment-sectio"
 
 
 export default async function WatchPage({
@@ -258,15 +256,10 @@ export default async function WatchPage({
                         </div>
                     </PlayerProvider>
 
-                    <div className="hero mt-24">
-
-                        <HeadTitle highlight="Коментарі" className="text-3xl" />
-
-                        <CommentInput user={user} animeId={Number(watchId)} />
-
-                        <CommentsContent animeId={Number(watchId)}/>
-
-                    </div>
+                    <CommentsSection
+                        user={user}
+                        animeId={Number(watchId)}
+                    />
                 </div>
             )}
         </div>

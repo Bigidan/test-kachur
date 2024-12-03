@@ -21,7 +21,7 @@ import {
     memberTable, roleTable,
     userTable
 } from "@/lib/db/schema";
-import {desc, eq, like, or, sql} from "drizzle-orm";
+import {and, desc, eq, isNull, like, or, sql} from "drizzle-orm";
 import { hashPassword, verifyPassword } from "@/lib/auth/jwt";
 import { AnimeData, CommentsType} from "@/components/types/anime-types";
 import {User} from "@/components/types/user"; // adjust the import path as needed
@@ -313,7 +313,11 @@ export async function getPopularAnimeBySearch(searchQuery: string) {
         .limit(9);
 }
 
-export async function getComments(animeId: number): Promise<CommentsType[]>{
+export async function getComments(
+    animeId: number,
+    limit: number = 9,
+    offset: number = 0
+): Promise<CommentsType[]> {
     return db.select({
         comment: animeCommentsTable,
         user: {
@@ -325,9 +329,35 @@ export async function getComments(animeId: number): Promise<CommentsType[]>{
             roleDescription: roleTable.description,
         }
     }).from(animeCommentsTable)
-        .where(eq(animeCommentsTable.animeId, animeId))
-        .orderBy(desc(animeCommentsTable.commentId))
-        .limit(9)
+        .where(and(
+            eq(animeCommentsTable.animeId, animeId),
+            isNull(animeCommentsTable.parentCommentId)  // Only top-level comments
+        ))
+        .orderBy(desc(animeCommentsTable.updateDate))
+        .limit(limit)
+        .offset(offset)
+        .leftJoin(userTable, eq(userTable.userId, animeCommentsTable.userId))
+        .leftJoin(roleTable, eq(roleTable.roleId, userTable.roleId));
+}
+
+export async function getNestedComments(
+    parentCommentId: number,
+    limit: number = 10
+): Promise<CommentsType[]> {
+    return db.select({
+        comment: animeCommentsTable,
+        user: {
+            userId: userTable.userId,
+            nickname: userTable.nickname,
+            name: userTable.name,
+            image: userTable.image,
+            role: userTable.roleId,
+            roleDescription: roleTable.description,
+        }
+    }).from(animeCommentsTable)
+        .where(eq(animeCommentsTable.parentCommentId, parentCommentId))
+        .orderBy(desc(animeCommentsTable.updateDate))
+        .limit(limit)
         .leftJoin(userTable, eq(userTable.userId, animeCommentsTable.userId))
         .leftJoin(roleTable, eq(roleTable.roleId, userTable.roleId));
 }
@@ -337,16 +367,31 @@ export async function sendComment(comment: {
     userId: number | null;
     parentCommentId: number | null;
     comment: string;
-    updateDate: Date;
 }) {
-
-    await db.insert(animeCommentsTable).values({
+    const newCommentId = await db.insert(animeCommentsTable).values({
         animeId: comment.animeId,
         userId: comment.userId || null,
         parentCommentId: comment.parentCommentId,
         comment: comment.comment,
         updateDate: new Date(),
         isDeleted: false,
-    });
+    }).returning({id: animeCommentsTable.commentId});
 
+    // Fetch the full comment details with user information
+    const [newCommentWithUser] = await db.select({
+        comment: animeCommentsTable,
+        user: {
+            userId: userTable.userId,
+            nickname: userTable.nickname,
+            name: userTable.name,
+            image: userTable.image,
+            role: userTable.roleId,
+            roleDescription: roleTable.description,
+        }
+    }).from(animeCommentsTable)
+        .where(eq(animeCommentsTable.commentId, newCommentId[0].id))
+        .leftJoin(userTable, eq(userTable.userId, animeCommentsTable.userId))
+        .leftJoin(roleTable, eq(roleTable.roleId, userTable.roleId));
+
+    return newCommentWithUser;
 }

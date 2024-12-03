@@ -134,16 +134,18 @@ export interface CommentsType {
         commentId: number;
         animeId: number | null;
         userId: number | null;
-        parentCommentId: number | null;
+        parentCommentId?: number | null;
         comment: string | null;
         updateDate: Date;
-    },
-    user: {
-        userId: number | null,
-        nickname: string | null,
-        name: string | null,
-        image: string | null,
-        role: number | null,
-        roleDescription: string | null,
-    } | null,
+        isDeleted: boolean;
+    };
+    user?: {
+        userId: number | null;
+        nickname: string | null;
+        name: string | null;
+        image: string | null;
+        role: number | null;
+        roleDescription: string | null;
+    } | null;
+    nestedComments?: CommentsType[];  // Add this line to support nested comments
 }

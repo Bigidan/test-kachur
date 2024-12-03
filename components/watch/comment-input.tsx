@@ -13,13 +13,15 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {CommentsType} from "@/components/types/anime-types";
 
 interface CommentInputProps {
     user: UserType | null;
     animeId: number;
+    onCommentAdded: (comment: CommentsType) => void;
 }
 
-const CommentInput: React.FC<CommentInputProps> = ({ user, animeId }) => {
+const CommentInput: React.FC<CommentInputProps> = ({ user, animeId, onCommentAdded }) => {
     const [commentText, setCommentText] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [errorDialogText, setErrorDialogText] = useState("");
@@ -45,8 +47,11 @@ const CommentInput: React.FC<CommentInputProps> = ({ user, animeId }) => {
                     updateDate: new Date(),
             };
 
+
             // Виклик функції надсилання коментаря
-            await sendComment(newComment);
+            const newCommentData = await sendComment(newComment);
+
+            onCommentAdded(newCommentData);
 
             // Очищення поля вводу після успішного надсилання
             setCommentText('');
