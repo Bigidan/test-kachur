@@ -14,7 +14,7 @@ const CommentTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 
         const handleInput = React.useCallback(() => {
             if (textareaRef.current) {
-                textareaRef.current.style.height = "1rem"; // Скидаємо висоту
+                textareaRef.current.style.height = "16px"; // Скидаємо висоту
                 textareaRef.current.style.height = `${textareaRef.current.scrollHeight+2}px`; // Встановлюємо висоту відповідно до контенту
             }
         }, []);

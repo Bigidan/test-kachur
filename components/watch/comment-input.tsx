@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { CommentTextarea } from "@/components/ui/commnet-textarea";
 import { sendComment } from "@/lib/db/userDB";
 import {
-    AlertDialog, AlertDialogAction,
+    AlertDialog, AlertDialogAction, AlertDialogCancel,
     AlertDialogContent, AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle,
+    AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {CommentsType} from "@/components/types/anime-types";
 
@@ -20,9 +20,10 @@ interface CommentInputProps {
     animeId: number;
     onCommentAdded: (comment: CommentsType) => void;
     parentId?: number | null;
+    onCancel?: () => void;
 }
 
-const CommentInput: React.FC<CommentInputProps> = ({ user, animeId, onCommentAdded, parentId = null }) => {
+const CommentInput: React.FC<CommentInputProps> = ({ user, animeId, onCommentAdded, parentId = null, onCancel }) => {
     const [commentText, setCommentText] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [errorDialogText, setErrorDialogText] = useState("");
@@ -91,6 +92,11 @@ const CommentInput: React.FC<CommentInputProps> = ({ user, animeId, onCommentAdd
         }
     };
 
+    const handleCancel = async () => {
+        setErrorDialogText("Ви точно хочете скасувати?");
+        setIsErrorDialogOpen(true);
+    }
+
     return (
         <div className="w-full flex flex-row items-center justify-center bg-[#676767] p-7 gap-2 rounded-lg relative">
 
@@ -133,6 +139,29 @@ const CommentInput: React.FC<CommentInputProps> = ({ user, animeId, onCommentAdd
                     placeholder="Додайте коментар..."
                 />
             </div>
+
+            {parentId && (
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button
+                            className="self-end shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] font-semibold">
+                    <span
+                        className="text-transparent bg-clip-text bg-gradient-to-b from-[#C50000] to-[#380000]">
+                        Скасувати
+                    </span>
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Точно скасувати?</AlertDialogTitle>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Назад</AlertDialogCancel>
+                            <AlertDialogAction onClick={onCancel}>Так</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
 
             <Button
                 onClick={handleSubmitComment}

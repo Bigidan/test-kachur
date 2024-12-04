@@ -312,3 +312,22 @@ body,
   background-color: transparent;
   color: inherit;
 }
+
+.answerComm {
+  position: relative;
+}
+
+.answerComm::before {
+  content: '';
+  position: absolute;
+  z-index: 20;
+
+  top: -50px;
+  left: 15px;
+  width: 139px;
+  height: 139px;
+  background-image: url('/arrow.png');
+  background-size: cover;
+  user-select: none;
+  pointer-events: none;
+}

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {getComments, getNestedComments} from "@/lib/db/userDB";
@@ -28,6 +28,7 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
     const [page, setPage] = useState<number>(1);
     const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set());
     const [replyingTo, setReplyingTo] = useState<number | null>(null);
+    const [showDeletedComments, setShowDeletedComments] = useState<boolean>(false); // Стан для перемикання видалених коментарів
 
     const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -55,7 +56,6 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
         fetchInitialComments();
     }, [fetchInitialComments]);
 
-
     const loadMoreComments = useCallback(async () => {
         const nextPage = page + 1;
         const response = await getComments(
@@ -73,8 +73,7 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
             setHasMoreComments(false);
         }
     }, [animeId, page, user?.roleId]);
-    
-    // Intersection Observer для автоматичного завантаження
+
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
@@ -108,9 +107,7 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
                     : comment
             )
         );
-    }
-
-    
+    };
 
     const toggleNestedComments = async (commentId: number) => {
         const newExpandedComments = new Set(expandedComments);
@@ -144,7 +141,6 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
             }));
         };
 
-        // Використовуємо синхронну функцію з await
         const updatedComments = await findAndToggleComments(comments);
 
         setComments(updatedComments);
@@ -154,11 +150,9 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
     const addNewCommentToTree = (newComment: CommentsType, parentId: number | null = null) => {
         setComments(prevComments => {
             if (!parentId) {
-                // Додаємо коментар на верхньому рівні
                 return [newComment, ...prevComments];
             }
 
-            // Додаємо коментар у відповідне місце
             const addNestedComment = (comments: CommentsType[]): CommentsType[] => {
                 return comments.map(comment => {
                     if (comment.comment.commentId === parentId) {
@@ -186,36 +180,39 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
     };
 
     const renderCommentTree = (comments: CommentsType[], depth: number = 0) => {
-        return comments.map(comment => (
-            <div key={comment.comment.commentId} className={`mb-2 ${depth > 0 ? 'mb-3 pl-10' : ''}`}>
-                <CommentItem
-                    comment={comment}
-                    onShowReplies={comment.comment.commentId ? () => toggleNestedComments(comment.comment.commentId) : undefined}
-                    isRepliesExpanded={comment.comment.commentId ? expandedComments.has(comment.comment.commentId) : false}
-                    repliesCount={comment.repliesCount || 0}
-                    isReply={depth > 0}
-                    isDeletable={(user?.userId == comment.user?.userId || user?.roleId == 3) && !comment.comment.isDeleted}
-                    onReply={() => setReplyingTo(comment.comment.commentId)} // Додаємо функцію для відкриття поля відповіді
-                    onDelete={() => deleteCommentById(comment.comment.commentId)}
-                />
-                {replyingTo === comment.comment.commentId && (
-                    <CommentInput
-                        user={user}
-                        animeId={animeId}
-                        parentId={comment.comment.commentId}
-                        onCommentAdded={newComment => {
-                            addNewCommentToTree(newComment, comment.comment.commentId);
-                            setReplyingTo(null); // Закриваємо поле вводу після додавання коментаря
-                        }}
+        return comments
+            .filter(comment => showDeletedComments || !comment.comment.isDeleted) // Фільтруємо видалені коментарі
+            .map(comment => (
+                <div key={comment.comment.commentId} className={`mb-2 ${depth > 0 ? 'mb-3 pl-10' : ''}`}>
+                    <CommentItem
+                        comment={comment}
+                        onShowReplies={comment.comment.commentId ? () => toggleNestedComments(comment.comment.commentId) : undefined}
+                        isRepliesExpanded={comment.comment.commentId ? expandedComments.has(comment.comment.commentId) : false}
+                        repliesCount={comment.repliesCount || 0}
+                        isReply={depth > 0}
+                        isDeletable={(user?.userId == comment.user?.userId || user?.roleId == 3) && !comment.comment.isDeleted}
+                        onReply={() => setReplyingTo(comment.comment.commentId)}
+                        onDelete={() => deleteCommentById(comment.comment.commentId)}
                     />
-                )}
-                {comment.nestedComments && comment.nestedComments.length > 0 && (
-                    <div className="pl-10">
-                        {renderCommentTree(comment.nestedComments, depth + 1)}
-                    </div>
-                )}
-            </div>
-        ));
+                    {replyingTo === comment.comment.commentId && (
+                        <CommentInput
+                            user={user}
+                            animeId={animeId}
+                            parentId={comment.comment.commentId}
+                            onCommentAdded={newComment => {
+                                addNewCommentToTree(newComment, comment.comment.commentId);
+                                setReplyingTo(null);
+                            }}
+                            onCancel={() => setReplyingTo(null)}
+                        />
+                    )}
+                    {comment.nestedComments && comment.nestedComments.length > 0 && (
+                        <div className="pl-5 answerComm">
+                            {renderCommentTree(comment.nestedComments, depth + 1)}
+                        </div>
+                    )}
+                </div>
+            ));
     };
 
     if (loading) {
@@ -224,6 +221,18 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
 
     return (
         <div className="mt-6 space-y-4">
+            {user?.roleId === 3 && ( // Чекбокс тільки для адміністратора
+                <div className="flex items-center mb-4">
+                    <input
+                        type="checkbox"
+                        id="showDeletedComments"
+                        checked={showDeletedComments}
+                        onChange={() => setShowDeletedComments(prev => !prev)}
+                        className="mr-2"
+                    />
+                    <label htmlFor="showDeletedComments" className="text-sm text-gray-700">Показувати видалені коментарі</label>
+                </div>
+            )}
             {comments.length > 0 ? (
                 <>
                     {renderCommentTree(comments)}
@@ -232,7 +241,11 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
                         ref={loadMoreRef}
                         className="w-full flex justify-center mt-4"
                     >
-                        <Loader className="animate-spin" style={{ width: "40px", height: "40px" }}/>
+                        {hasMoreComments ? (
+                            <Loader className="animate-spin" style={{ width: "40px", height: "40px" }} />
+                        ) : (
+                            <p className="text-center text-gray-500 mt-4">Це всі коментарі.</p>
+                        )}
                     </div>
                 </>
             ) : (

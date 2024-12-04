@@ -119,7 +119,7 @@ export const CommentItem: React.FC<CommentItemProps> = React.memo(
                 </div>
 
                 <div className="flex flex-col justify-between self-stretch">
-                    <div className="self-end text-sm pt-2">
+                    <div className="self-end text-sm pt-2 text-nowrap">
                         <p>{comment.comment.updateDate.toLocaleString()}</p>
                     </div>
 
