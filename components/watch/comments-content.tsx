@@ -65,7 +65,6 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
                 prevComments.map(comment => {
                     if (comment.comment.commentId === commentId) {
                         // Видаляємо вкладені коментарі
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         const { nestedComments: _, ...rest } = comment;
                         return rest;
                     }
@@ -76,7 +75,6 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
                             ...comment,
                             nestedComments: comment.nestedComments.map(nestedComment => {
                                 if (nestedComment.comment.commentId === commentId) {
-                                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     const { nestedComments: _, ...rest } = nestedComment;
                                     return rest;
                                 }
