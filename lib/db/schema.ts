@@ -161,7 +161,7 @@ export const animeCommentsTable = sqliteTable('anime_comments', {
     animeId: integer('anime_id', { mode: 'number' }).references(() => animeTable.animeId),
     userId: integer('user_id', { mode: 'number' }).references(() => userTable.userId),
     parentCommentId: integer('parent_comment_id', { mode: 'number'}).references((): AnySQLiteColumn => animeCommentsTable.commentId),
-    comment: text('comment'),
+    comment: text('comment').notNull(),
     updateDate: integer('release_date', { mode: 'timestamp' }).notNull(),
     isDeleted: integer('is_deleted', { mode: 'boolean' }).notNull(),
 });

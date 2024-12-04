@@ -47,7 +47,6 @@ const CommentInput: React.FC<CommentInputProps> = ({ user, animeId, onCommentAdd
                     updateDate: new Date(),
             };
 
-
             // Виклик функції надсилання коментаря
             const newCommentData = await sendComment(newComment);
 
@@ -67,16 +66,17 @@ const CommentInput: React.FC<CommentInputProps> = ({ user, animeId, onCommentAdd
 
     return (
         <div className="w-full flex flex-row items-center justify-center bg-[#676767] p-7 gap-2 rounded-lg">
+            <Avatar className="w-[60px] h-[60px] border-2 border-white rounded-full self-start ">
             {user ? (
-                <Avatar className="w-[69px] h-[69px] border-2 border-white rounded-full">
+
                     <AvatarImage src={user.image || ""}></AvatarImage>
-                    <AvatarFallback><User/></AvatarFallback>
-                </Avatar>
+
+
             ) : (
-                <Avatar className="w-[60px] h-[60px] border-2 border-white rounded-full">
                     <AvatarFallback><User/></AvatarFallback>
-                </Avatar>
             )}
+                <AvatarFallback><User/></AvatarFallback>
+            </Avatar>
 
             <div className="w-full flex flex-col items-start justify-start gap-2">
                 {user ? (

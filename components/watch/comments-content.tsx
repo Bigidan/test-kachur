@@ -122,7 +122,7 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
 
     const renderCommentTree = (comments: CommentsType[], depth: number = 0) => {
         return comments.map(comment => (
-            <div key={comment.comment.commentId} className={`mb-4 ${depth > 0 ? 'pl-10' : ''}`}>
+            <div key={comment.comment.commentId} className={`mb-2 ${depth > 0 ? 'mb-3 pl-10' : ''}`}>
                 <CommentItem
                     comment={comment}
                     onShowReplies={comment.comment.commentId ? () => toggleNestedComments(comment.comment.commentId) : undefined}

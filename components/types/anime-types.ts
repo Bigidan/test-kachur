@@ -135,7 +135,7 @@ export interface CommentsType {
         animeId: number | null;
         userId: number | null;
         parentCommentId?: number | null;
-        comment: string | null;
+        comment: string;
         updateDate: Date;
         isDeleted: boolean;
     };

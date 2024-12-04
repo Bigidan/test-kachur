@@ -12,18 +12,18 @@ const CommentTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         // Об'єднуємо ref, переданий через props, з локальним ref
         React.useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement);
 
-        const handleInput = () => {
+        const handleInput = React.useCallback(() => {
             if (textareaRef.current) {
                 textareaRef.current.style.height = "auto"; // Скидаємо висоту
                 textareaRef.current.style.height = `${textareaRef.current.scrollHeight+2}px`; // Встановлюємо висоту відповідно до контенту
             }
-        };
+        }, []);
 
         React.useEffect(() => {
             if (textareaRef.current) {
                 handleInput(); // Початкове налаштування висоти
             }
-        }, []);
+        }, [handleInput, props.value]); // Додаємо props.value як залежність
 
         return (
             <textarea

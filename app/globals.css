@@ -296,3 +296,19 @@ body,
     background-position: 100% 0%;
   }
 }
+
+
+.spoiler {
+  background-color: #333;
+  color: #333;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+.spoiler:hover {
+  background-color: #444;
+}
+.spoiler.revealed {
+  background-color: transparent;
+  color: inherit;
+}
