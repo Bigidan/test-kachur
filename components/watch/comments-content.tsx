@@ -1,13 +1,17 @@
 "use client"
 
-import React, {forwardRef, useEffect, useImperativeHandle, useState} from 'react';
+import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {getComments, getNestedComments} from "@/lib/db/userDB";
 import {CommentsType} from "@/components/types/anime-types";
-import {Button} from "@/components/ui/button";
 import {CommentItem} from "@/components/watch/comment-item";
+import {Loader} from "lucide-react";
+import {User} from "@/components/types/user";
+import CommentInput from "@/components/watch/comment-input";
+import {toast} from "sonner";
 
 interface CommentsContentProps {
     animeId: number;
+    user: User | null;
 }
 
 export interface CommentsContentRef {
@@ -17,34 +21,49 @@ export interface CommentsContentRef {
 const INITIAL_COMMENTS_LIMIT = 9;
 const NESTED_COMMENTS_LIMIT = 10;
 
-const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ animeId }, ref) => {
+const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ animeId, user }, ref) => {
     const [comments, setComments] = useState<CommentsType[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [hasMoreComments, setHasMoreComments] = useState<boolean>(true);
     const [page, setPage] = useState<number>(1);
     const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set());
+    const [replyingTo, setReplyingTo] = useState<number | null>(null);
+
+    const loadMoreRef = useRef<HTMLDivElement>(null);
+
+    const fetchInitialComments = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await getComments(
+                animeId,
+                INITIAL_COMMENTS_LIMIT,
+                0,
+                user?.roleId === 3
+            );
+            setComments(response);
+            setHasMoreComments(response.length === INITIAL_COMMENTS_LIMIT);
+        } catch (error) {
+            toast.error('Не вдалося завантажити коментарі', {
+                description: error instanceof Error ? error.message : String(error)
+            });
+        } finally {
+            setLoading(false);
+        }
+    }, [animeId, user?.roleId]);
 
     useEffect(() => {
-        const fetchInitialComments = async () => {
-            setLoading(true);
-            const response = await getComments(animeId, INITIAL_COMMENTS_LIMIT, 0);
-            setComments(response);
-            setLoading(false);
-            setHasMoreComments(response.length === INITIAL_COMMENTS_LIMIT);
-        };
-
         fetchInitialComments();
-    }, [animeId]);
+    }, [fetchInitialComments]);
 
-    useImperativeHandle(ref, () => ({
-        addNewComment: (newComment: CommentsType) => {
-            setComments(prevComments => [newComment, ...prevComments]);
-        }
-    }));
 
-    const loadMoreComments = async () => {
+    const loadMoreComments = useCallback(async () => {
         const nextPage = page + 1;
-        const response = await getComments(animeId, INITIAL_COMMENTS_LIMIT, (nextPage - 1) * INITIAL_COMMENTS_LIMIT);
+        const response = await getComments(
+            animeId,
+            INITIAL_COMMENTS_LIMIT,
+            (nextPage - 1) * INITIAL_COMMENTS_LIMIT,
+            user?.roleId == 3
+        );
 
         if (response.length > 0) {
             setComments(prev => [...prev, ...response]);
@@ -53,71 +72,117 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
         } else {
             setHasMoreComments(false);
         }
-    };
+    }, [animeId, page, user?.roleId]);
+    
+    // Intersection Observer для автоматичного завантаження
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const first = entries[0];
+                if (first.isIntersecting && hasMoreComments && !loading) {
+                    loadMoreComments();
+                }
+            },
+            { threshold: 1.0 }
+        );
+
+        const currentRef = loadMoreRef.current;
+        if (currentRef) observer.observe(currentRef);
+
+        return () => {
+            if (currentRef) observer.unobserve(currentRef);
+        };
+    }, [hasMoreComments, loadMoreComments, loading]);
+
+    useImperativeHandle(ref, () => ({
+        addNewComment: (newComment: CommentsType) => {
+            setComments(prevComments => [newComment, ...prevComments]);
+        },
+    }));
+
+    const deleteCommentById = (commentId: number) => {
+        setComments((prevComments) =>
+            prevComments.map((comment) =>
+                comment.comment.commentId === commentId
+                    ? { ...comment, comment: { ...comment.comment, isDeleted: true } }
+                    : comment
+            )
+        );
+    }
+
+    
 
     const toggleNestedComments = async (commentId: number) => {
         const newExpandedComments = new Set(expandedComments);
 
-        if (newExpandedComments.has(commentId)) {
-            // Якщо коментар вже розгорнутий - закриваємо
-            newExpandedComments.delete(commentId);
-            setComments(prevComments =>
-                prevComments.map(comment => {
-                    if (comment.comment.commentId === commentId) {
-                        // Видаляємо вкладені коментарі
+        const findAndToggleComments = async (commentsArray: CommentsType[]): Promise<CommentsType[]> => {
+            return await Promise.all(commentsArray.map(async (comment) => {
+                if (comment.comment.commentId === commentId) {
+                    if (newExpandedComments.has(commentId)) {
+                        newExpandedComments.delete(commentId);
                         const { nestedComments: _, ...rest } = comment;
                         return rest;
-                    }
-
-                    // Рекурсивно обробляємо вкладені коментарі
-                    if (comment.nestedComments) {
-                        return {
-                            ...comment,
-                            nestedComments: comment.nestedComments.map(nestedComment => {
-                                if (nestedComment.comment.commentId === commentId) {
-                                    const { nestedComments: _, ...rest } = nestedComment;
-                                    return rest;
-                                }
-                                return nestedComment;
-                            })
-                        };
-                    }
-
-                    return comment;
-                })
-            );
-        } else {
-            // Завантажуємо вкладені коментарі
-            const nestedComments = await getNestedComments(commentId, NESTED_COMMENTS_LIMIT);
-
-            newExpandedComments.add(commentId);
-
-            setComments(prevComments =>
-                prevComments.map(comment => {
-                    // Перевіряємо коментарі верхнього рівня
-                    if (comment.comment.commentId === commentId) {
+                    } else {
+                        const nestedComments = await getNestedComments(
+                            commentId,
+                            NESTED_COMMENTS_LIMIT,
+                            user?.roleId == 3
+                        );
+                        newExpandedComments.add(commentId);
                         return { ...comment, nestedComments };
                     }
+                }
 
-                    // Перевіряємо вкладені коментарі першого рівня
+                if (comment.nestedComments) {
+                    return {
+                        ...comment,
+                        nestedComments: await findAndToggleComments(comment.nestedComments)
+                    };
+                }
+
+                return comment;
+            }));
+        };
+
+        // Використовуємо синхронну функцію з await
+        const updatedComments = await findAndToggleComments(comments);
+
+        setComments(updatedComments);
+        setExpandedComments(newExpandedComments);
+    };
+
+    const addNewCommentToTree = (newComment: CommentsType, parentId: number | null = null) => {
+        setComments(prevComments => {
+            if (!parentId) {
+                // Додаємо коментар на верхньому рівні
+                return [newComment, ...prevComments];
+            }
+
+            // Додаємо коментар у відповідне місце
+            const addNestedComment = (comments: CommentsType[]): CommentsType[] => {
+                return comments.map(comment => {
+                    if (comment.comment.commentId === parentId) {
+                        return {
+                            ...comment,
+                            nestedComments: comment.nestedComments
+                                ? [newComment, ...comment.nestedComments]
+                                : [newComment],
+                        };
+                    }
+
                     if (comment.nestedComments) {
                         return {
                             ...comment,
-                            nestedComments: comment.nestedComments.map(nestedComment => {
-                                if (nestedComment.comment.commentId === commentId) {
-                                    return { ...nestedComment, nestedComments };
-                                }
-                                return nestedComment;
-                            })
+                            nestedComments: addNestedComment(comment.nestedComments),
                         };
                     }
 
                     return comment;
-                })
-            );
-        }
+                });
+            };
 
-        setExpandedComments(newExpandedComments);
+            return addNestedComment(prevComments);
+        });
     };
 
     const renderCommentTree = (comments: CommentsType[], depth: number = 0) => {
@@ -129,7 +194,21 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
                     isRepliesExpanded={comment.comment.commentId ? expandedComments.has(comment.comment.commentId) : false}
                     repliesCount={comment.repliesCount || 0}
                     isReply={depth > 0}
+                    isDeletable={(user?.userId == comment.user?.userId || user?.roleId == 3) && !comment.comment.isDeleted}
+                    onReply={() => setReplyingTo(comment.comment.commentId)} // Додаємо функцію для відкриття поля відповіді
+                    onDelete={() => deleteCommentById(comment.comment.commentId)}
                 />
+                {replyingTo === comment.comment.commentId && (
+                    <CommentInput
+                        user={user}
+                        animeId={animeId}
+                        parentId={comment.comment.commentId}
+                        onCommentAdded={newComment => {
+                            addNewCommentToTree(newComment, comment.comment.commentId);
+                            setReplyingTo(null); // Закриваємо поле вводу після додавання коментаря
+                        }}
+                    />
+                )}
                 {comment.nestedComments && comment.nestedComments.length > 0 && (
                     <div className="pl-10">
                         {renderCommentTree(comment.nestedComments, depth + 1)}
@@ -140,7 +219,7 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
     };
 
     if (loading) {
-        return <div>Loading comments...</div>;
+        return <div className="w-full flex justify-center m-10"><Loader className="animate-spin" style={{ width: "60px", height: "60px" }}/></div>;
     }
 
     return (
@@ -149,13 +228,12 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
                 <>
                     {renderCommentTree(comments)}
 
-                    {hasMoreComments && (
-                        <div className="w-full flex justify-center mt-4">
-                            <Button onClick={loadMoreComments} variant="outline">
-                                Показати більше коментарів
-                            </Button>
-                        </div>
-                    )}
+                    <div
+                        ref={loadMoreRef}
+                        className="w-full flex justify-center mt-4"
+                    >
+                        <Loader className="animate-spin" style={{ width: "40px", height: "40px" }}/>
+                    </div>
                 </>
             ) : (
                 <p className="w-full text-center p-7">Ще ніхто не крякнув.</p>
@@ -163,7 +241,6 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
         </div>
     );
 });
-
 
 CommentsContent.displayName = 'CommentsContent';
 

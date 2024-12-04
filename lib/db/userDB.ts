@@ -24,7 +24,8 @@ import {
 import {and, desc, eq, isNotNull, isNull, like, or, sql} from "drizzle-orm";
 import { hashPassword, verifyPassword } from "@/lib/auth/jwt";
 import { AnimeData, CommentsType} from "@/components/types/anime-types";
-import {User} from "@/components/types/user"; // adjust the import path as needed
+import {User as UserType, User} from "@/components/types/user";
+import {getSession} from "@/lib/auth/session"; // adjust the import path as needed
 
 
 export async function userRegister(values: {
@@ -316,7 +317,8 @@ export async function getPopularAnimeBySearch(searchQuery: string) {
 export async function getComments(
     animeId: number,
     limit: number = 9,
-    offset: number = 0
+    offset: number = 0,
+    isAdmin: boolean = false,
 ): Promise<CommentsType[]> {
     // Спочатку створимо підзапит для підрахунку відповідей
     const repliesSubquery = db
@@ -325,7 +327,15 @@ export async function getComments(
             repliesCount: sql<number>`count(*)`.as('repliesCount')
         })
         .from(animeCommentsTable)
-        .where(isNotNull(animeCommentsTable.parentCommentId))
+        .where(
+            and(
+                isNotNull(animeCommentsTable.parentCommentId),
+                or(
+                    eq(animeCommentsTable.isDeleted, false),
+                    eq(animeCommentsTable.isDeleted, isAdmin),
+                ),
+            )
+        )
         .groupBy(animeCommentsTable.parentCommentId)
         .as('repliesSubquery');
 
@@ -342,10 +352,19 @@ export async function getComments(
         repliesCount: repliesSubquery.repliesCount
     }).from(animeCommentsTable)
         .leftJoin(repliesSubquery, eq(animeCommentsTable.commentId, repliesSubquery.parentCommentId))
-        .where(and(
-            eq(animeCommentsTable.animeId, animeId),
-            isNull(animeCommentsTable.parentCommentId)  // Only top-level comments
-        ))
+        .where(
+            and(
+                and(
+                    eq(animeCommentsTable.animeId, animeId),
+                    isNull(animeCommentsTable.parentCommentId)  // Only top-level comments
+                ),
+                or(
+                    eq(animeCommentsTable.isDeleted, false),
+                    eq(animeCommentsTable.isDeleted, isAdmin),
+                ),
+            )
+        )
+
         .orderBy(desc(animeCommentsTable.updateDate))
         .limit(limit)
         .offset(offset)
@@ -355,7 +374,8 @@ export async function getComments(
 
 export async function getNestedComments(
     parentCommentId: number,
-    limit: number = 10
+    limit: number = 10,
+    isAdmin: boolean = false,
 ): Promise<CommentsType[]> {
     // Підзапит для підрахунку відповідей
     const repliesSubquery = db
@@ -364,7 +384,13 @@ export async function getNestedComments(
             repliesCount: sql<number>`count(*)`.as('repliesCount')
         })
         .from(animeCommentsTable)
-        .where(isNotNull(animeCommentsTable.parentCommentId))
+        .where(and(
+            isNotNull(animeCommentsTable.parentCommentId),
+            or(
+                eq(animeCommentsTable.isDeleted, false),
+                eq(animeCommentsTable.isDeleted, isAdmin),
+            ),
+        ))
         .groupBy(animeCommentsTable.parentCommentId)
         .as('repliesSubquery');
 
@@ -381,7 +407,15 @@ export async function getNestedComments(
         repliesCount: repliesSubquery.repliesCount
     }).from(animeCommentsTable)
         .leftJoin(repliesSubquery, eq(animeCommentsTable.commentId, repliesSubquery.parentCommentId))
-        .where(eq(animeCommentsTable.parentCommentId, parentCommentId))
+        .where(
+            and(
+                eq(animeCommentsTable.parentCommentId, parentCommentId),
+                or(
+                    eq(animeCommentsTable.isDeleted, false),
+                    eq(animeCommentsTable.isDeleted, isAdmin),
+                ),
+            )
+        )
         .orderBy(desc(animeCommentsTable.updateDate))
         .limit(limit)
         .leftJoin(userTable, eq(userTable.userId, animeCommentsTable.userId))
@@ -420,4 +454,36 @@ export async function sendComment(comment: {
         .leftJoin(roleTable, eq(roleTable.roleId, userTable.roleId));
 
     return newCommentWithUser;
+}
+
+export async function deleteComment(commentId: number) {
+    const parsed = await getSession();
+    const user = parsed?.user as UserType;
+
+    if (!user) {
+        throw new Error('Ви не авторизовані');
+    }
+
+    const selectedComment = await db.query.animeCommentsTable.findFirst({
+        where: eq(animeCommentsTable.commentId, commentId),
+        columns: {
+            userId: true,
+            isDeleted: true,
+        }
+    });
+
+    if  (user.roleId !== 3){
+        if (!selectedComment || selectedComment.userId !== user.userId) {
+            throw new Error('Ви не маєте права видаляти цей коментар');
+        }
+    }
+
+
+    await db
+        .update(animeCommentsTable)
+        .set({ isDeleted: true, })
+        .where(eq(animeCommentsTable.commentId, commentId));
+
+    return { success: true, message: 'Успіх!' };
+
 }

@@ -30,6 +30,7 @@ export default function CommentsSection({ user, animeId }: CommentsSectionProps)
             <CommentsContent
                 ref={commentsRef}
                 animeId={animeId}
+                user={user}
             />
         </div>
     );

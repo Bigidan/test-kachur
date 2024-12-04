@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { User as UserType } from "@/components/types/user";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User } from "lucide-react";
+import { User, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CommentTextarea } from "@/components/ui/commnet-textarea";
 import { sendComment } from "@/lib/db/userDB";
@@ -19,13 +19,40 @@ interface CommentInputProps {
     user: UserType | null;
     animeId: number;
     onCommentAdded: (comment: CommentsType) => void;
+    parentId?: number | null;
 }
 
-const CommentInput: React.FC<CommentInputProps> = ({ user, animeId, onCommentAdded }) => {
+const CommentInput: React.FC<CommentInputProps> = ({ user, animeId, onCommentAdded, parentId = null }) => {
     const [commentText, setCommentText] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [errorDialogText, setErrorDialogText] = useState("");
     const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
+    const [selectedText, setSelectedText] = useState<string>('');
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const handleTextSelection = () => {
+        if (textareaRef.current) {
+            const start = textareaRef.current.selectionStart;
+            const end = textareaRef.current.selectionEnd;
+            const selected = commentText.substring(start, end);
+            setSelectedText(selected);
+        }
+    };
+
+    const addSpoilerTag = () => {
+        if (textareaRef.current) {
+            const start = textareaRef.current.selectionStart;
+            const end = textareaRef.current.selectionEnd;
+
+            const newText =
+                commentText.slice(0, start) +
+                `[spoiler]${selectedText}[/spoiler]` +
+                commentText.slice(end);
+
+            setCommentText(newText);
+            setSelectedText('');
+        }
+    };
 
     const handleSubmitComment = async () => {
         // Перевірка на порожній коментар
@@ -40,11 +67,11 @@ const CommentInput: React.FC<CommentInputProps> = ({ user, animeId, onCommentAdd
         try {
             // Підготовка об'єкта коментаря
             const newComment = {
-                    animeId: animeId,
-                    userId: user?.userId || null,
-                    parentCommentId: null,
-                    comment: commentText,
-                    updateDate: new Date(),
+                animeId: animeId,
+                userId: user?.userId || null,
+                parentCommentId: parentId || null,
+                comment: commentText,
+                updateDate: new Date(),
             };
 
             // Виклик функції надсилання коментаря
@@ -65,29 +92,43 @@ const CommentInput: React.FC<CommentInputProps> = ({ user, animeId, onCommentAdd
     };
 
     return (
-        <div className="w-full flex flex-row items-center justify-center bg-[#676767] p-7 gap-2 rounded-lg">
-            <Avatar className="w-[60px] h-[60px] border-2 border-white rounded-full self-start ">
-            {user ? (
+        <div className="w-full flex flex-row items-center justify-center bg-[#676767] p-7 gap-2 rounded-lg relative">
 
-                    <AvatarImage src={user.image || ""}></AvatarImage>
-
-
-            ) : (
-                    <AvatarFallback><User/></AvatarFallback>
-            )}
-                <AvatarFallback><User/></AvatarFallback>
-            </Avatar>
-
-            <div className="w-full flex flex-col items-start justify-start gap-2">
                 {user ? (
-                    <h2 className="text-xl">{user.nickname}</h2>
+                    <Avatar className="w-[60px] h-[60px] border-2 border-white rounded-full self-start ">
+                        <AvatarImage src={user.image || ""}></AvatarImage>
+                        <AvatarFallback><User/></AvatarFallback>
+                    </Avatar>
                 ) : (
-                    <h2 className="text-xl">Гість</h2>
+                    <Avatar className="w-[60px] h-[60px] border-2 border-white rounded-full self-start ">
+                        <AvatarFallback><User/></AvatarFallback>
+                    </Avatar>
                 )}
 
+
+
+            <div className="w-full flex flex-col items-start justify-start pl-2">
+                <div className="w-full flex justify-between items-center">
+                    {user ? (
+                        <h2 className="text-xl">{user.nickname}</h2>
+                    ) : (
+                        <h2 className="text-xl">Гість</h2>
+                    )}
+                    {selectedText && (
+                        <Button
+                            variant="ghost"
+                            className="text-sm p-1 flex items-center gap-1 leading-tight h-auto"
+                            onClick={addSpoilerTag}
+                        >
+                            <Tag size={10} /> Додати спойлер
+                        </Button>
+                    )}
+                </div>
                 <CommentTextarea
+                    ref={textareaRef}
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
+                    onSelect={handleTextSelection}
                     className="focus:ring-0 focus-within:ring-0 rounded-none border-t-0 border-l-0 border-r-0 bg-transparent border-b-2 border-white focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                     placeholder="Додайте коментар..."
                 />
@@ -96,9 +137,9 @@ const CommentInput: React.FC<CommentInputProps> = ({ user, animeId, onCommentAdd
             <Button
                 onClick={handleSubmitComment}
                 disabled={isSubmitting}
-                className="self-end"
+                className="self-end shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] font-semibold"
             >
-                {isSubmitting ? 'Надсилання...' : 'Коментувати'}
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#C50000] to-[#380000]">{isSubmitting ? 'Надсилання...' : 'Коментувати'}</span>
             </Button>
 
             <AlertDialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
