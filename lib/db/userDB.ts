@@ -21,7 +21,7 @@ import {
     memberTable, roleTable,
     userTable
 } from "@/lib/db/schema";
-import {and, desc, eq, isNull, like, or, sql} from "drizzle-orm";
+import {and, desc, eq, isNotNull, isNull, like, or, sql} from "drizzle-orm";
 import { hashPassword, verifyPassword } from "@/lib/auth/jwt";
 import { AnimeData, CommentsType} from "@/components/types/anime-types";
 import {User} from "@/components/types/user"; // adjust the import path as needed
@@ -318,6 +318,17 @@ export async function getComments(
     limit: number = 9,
     offset: number = 0
 ): Promise<CommentsType[]> {
+    // Спочатку створимо підзапит для підрахунку відповідей
+    const repliesSubquery = db
+        .select({
+            parentCommentId: animeCommentsTable.parentCommentId,
+            repliesCount: sql<number>`count(*)`.as('repliesCount')
+        })
+        .from(animeCommentsTable)
+        .where(isNotNull(animeCommentsTable.parentCommentId))
+        .groupBy(animeCommentsTable.parentCommentId)
+        .as('repliesSubquery');
+
     return db.select({
         comment: animeCommentsTable,
         user: {
@@ -327,8 +338,10 @@ export async function getComments(
             image: userTable.image,
             role: userTable.roleId,
             roleDescription: roleTable.description,
-        }
+        },
+        repliesCount: repliesSubquery.repliesCount
     }).from(animeCommentsTable)
+        .leftJoin(repliesSubquery, eq(animeCommentsTable.commentId, repliesSubquery.parentCommentId))
         .where(and(
             eq(animeCommentsTable.animeId, animeId),
             isNull(animeCommentsTable.parentCommentId)  // Only top-level comments
@@ -344,6 +357,17 @@ export async function getNestedComments(
     parentCommentId: number,
     limit: number = 10
 ): Promise<CommentsType[]> {
+    // Підзапит для підрахунку відповідей
+    const repliesSubquery = db
+        .select({
+            parentCommentId: animeCommentsTable.parentCommentId,
+            repliesCount: sql<number>`count(*)`.as('repliesCount')
+        })
+        .from(animeCommentsTable)
+        .where(isNotNull(animeCommentsTable.parentCommentId))
+        .groupBy(animeCommentsTable.parentCommentId)
+        .as('repliesSubquery');
+
     return db.select({
         comment: animeCommentsTable,
         user: {
@@ -353,8 +377,10 @@ export async function getNestedComments(
             image: userTable.image,
             role: userTable.roleId,
             roleDescription: roleTable.description,
-        }
+        },
+        repliesCount: repliesSubquery.repliesCount
     }).from(animeCommentsTable)
+        .leftJoin(repliesSubquery, eq(animeCommentsTable.commentId, repliesSubquery.parentCommentId))
         .where(eq(animeCommentsTable.parentCommentId, parentCommentId))
         .orderBy(desc(animeCommentsTable.updateDate))
         .limit(limit)

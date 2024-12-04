@@ -1,12 +1,10 @@
 "use client"
 
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
-import { getComments, getNestedComments } from "@/lib/db/userDB";
-import { CommentsType } from "@/components/types/anime-types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import React, {forwardRef, useEffect, useImperativeHandle, useState} from 'react';
+import {getComments, getNestedComments} from "@/lib/db/userDB";
+import {CommentsType} from "@/components/types/anime-types";
+import {Button} from "@/components/ui/button";
+import {CommentItem} from "@/components/watch/comment-item";
 
 interface CommentsContentProps {
     animeId: number;
@@ -61,26 +59,62 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
         const newExpandedComments = new Set(expandedComments);
 
         if (newExpandedComments.has(commentId)) {
+            // Якщо коментар вже розгорнутий - закриваємо
             newExpandedComments.delete(commentId);
             setComments(prevComments =>
-                prevComments.map(comment =>
-                    comment.comment.commentId === commentId
-                        ? { ...comment, nestedComments: undefined }
-                        : comment
-                )
+                prevComments.map(comment => {
+                    if (comment.comment.commentId === commentId) {
+                        // Видаляємо вкладені коментарі
+                        const { nestedComments: _, ...rest } = comment;
+                        return rest;
+                    }
+
+                    // Рекурсивно обробляємо вкладені коментарі
+                    if (comment.nestedComments) {
+                        return {
+                            ...comment,
+                            nestedComments: comment.nestedComments.map(nestedComment => {
+                                if (nestedComment.comment.commentId === commentId) {
+                                    const { nestedComments: _, ...rest } = nestedComment;
+                                    return rest;
+                                }
+                                return nestedComment;
+                            })
+                        };
+                    }
+
+                    return comment;
+                })
             );
         } else {
+            // Завантажуємо вкладені коментарі
             const nestedComments = await getNestedComments(commentId, NESTED_COMMENTS_LIMIT);
 
-            setComments(prevComments =>
-                prevComments.map(comment =>
-                    comment.comment.commentId === commentId
-                        ? { ...comment, nestedComments }
-                        : comment
-                )
-            );
-
             newExpandedComments.add(commentId);
+
+            setComments(prevComments =>
+                prevComments.map(comment => {
+                    // Перевіряємо коментарі верхнього рівня
+                    if (comment.comment.commentId === commentId) {
+                        return { ...comment, nestedComments };
+                    }
+
+                    // Перевіряємо вкладені коментарі першого рівня
+                    if (comment.nestedComments) {
+                        return {
+                            ...comment,
+                            nestedComments: comment.nestedComments.map(nestedComment => {
+                                if (nestedComment.comment.commentId === commentId) {
+                                    return { ...nestedComment, nestedComments };
+                                }
+                                return nestedComment;
+                            })
+                        };
+                    }
+
+                    return comment;
+                })
+            );
         }
 
         setExpandedComments(newExpandedComments);
@@ -93,10 +127,13 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
                     comment={comment}
                     onShowReplies={comment.comment.commentId ? () => toggleNestedComments(comment.comment.commentId) : undefined}
                     isRepliesExpanded={comment.comment.commentId ? expandedComments.has(comment.comment.commentId) : false}
+                    repliesCount={comment.repliesCount || 0}
                     isReply={depth > 0}
                 />
                 {comment.nestedComments && comment.nestedComments.length > 0 && (
-                    renderCommentTree(comment.nestedComments, depth + 1)
+                    <div className="pl-10">
+                        {renderCommentTree(comment.nestedComments, depth + 1)}
+                    </div>
                 )}
             </div>
         ));
@@ -127,67 +164,6 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
     );
 });
 
-interface CommentItemProps {
-    comment: CommentsType;
-    isReply?: boolean;
-    onShowReplies?: () => void;
-    isRepliesExpanded?: boolean;
-}
-
-const CommentItem: React.FC<CommentItemProps> = ({
-                                                     comment,
-                                                     isReply = false,
-                                                     onShowReplies,
-                                                     isRepliesExpanded = false
-                                                 }) => {
-    return (
-        <div
-            className={`
-                relative flex flex-row items-center justify-center 
-                bg-gradient-to-r from-[#C40000] to-[#5E0000] 
-                p-3 px-6 gap-2 rounded-lg
-                ${isReply ? '-mt-4 ml-6 z-10 shadow-[-5px_-5px_4px_0px_rgba(0,0,0,0.3)]' : ''}
-            `}
-        >
-            <Avatar className="w-[60px] h-[60px] border-2 border-white rounded-full">
-                <AvatarImage src={comment.user?.image || ""}></AvatarImage>
-                <AvatarFallback><User/></AvatarFallback>
-            </Avatar>
-
-            <div className="w-full flex flex-col items-start justify-start py-5 ml-4">
-                <h2 className="text-xl flex justify-center items-center font-bold">
-                    {comment.user?.nickname || "Гість"}
-                    {comment.user?.roleDescription ? (
-                        <Badge className="ml-2">{comment.user?.roleDescription}</Badge>
-                    ) : null}
-                </h2>
-
-                <p className="font-semibold text-sm mt-2">{comment.comment.comment}</p>
-            </div>
-
-            <div className="flex flex-col justify-between self-stretch">
-                <div className="self-end text-sm pt-2">
-                    <p>{comment.comment.updateDate.toLocaleString()}</p>
-                </div>
-
-                <div className="self-end flex flex-row items-end justify-end">
-                    {onShowReplies && (
-                        <Button
-                            variant="link"
-                            className="pr-0 flex items-center"
-                            onClick={onShowReplies}
-                        >
-                            {isRepliesExpanded ? 'Сховати відповіді' : 'Показати відповіді'}
-                            <ChevronDown className="ml-1" size={16} />
-                        </Button>
-                    )}
-                    <Button variant="link" className="pr-0">Відповісти</Button>
-                    <Button variant="link" className="pr-0">Видалити</Button>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 CommentsContent.displayName = 'CommentsContent';
 

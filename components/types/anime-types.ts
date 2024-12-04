@@ -148,4 +148,5 @@ export interface CommentsType {
         roleDescription: string | null;
     } | null;
     nestedComments?: CommentsType[];  // Add this line to support nested comments
+    repliesCount?: number;
 }
