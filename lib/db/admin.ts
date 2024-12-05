@@ -330,12 +330,17 @@ export async function getAllAnimePopularity() {
     return db.select({
         id: animePopularityTable.popularityId,
         name: animePopularityTable.popularity,
-    }).from(animePopularityTable);
+        order: animePopularityTable.order,
+    }).from(animePopularityTable)
+        .orderBy(animePopularityTable.order); // Сортування за порядком
 }
 
-export async function addAnimePopularity(popularity: string) {
+export async function addAnimePopularity(popularity: string, order?: number) {
     return db.insert(animePopularityTable)
-        .values({ popularity })
+        .values({
+            popularity,
+            order: order || 0 // Використовуємо переданий порядок або 0
+        })
         .returning({ id: animePopularityTable.popularityId });
 }
 
@@ -352,6 +357,15 @@ export async function deleteAnimePopularity(popularityId: number) {
         .returning({ id: animePopularityTable.popularityId });
 }
 
+export async function updateAnimePopularityOrder(updates: { id: number, order: number }[]) {
+    const promises = updates.map(update =>
+        db.update(animePopularityTable)
+            .set({ order: update.order })
+            .where(eq(animePopularityTable.popularityId, update.id))
+    );
+
+    return Promise.all(promises);
+}
 
 
 

@@ -1,7 +1,6 @@
 "use client";
 
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
-import {getComments, getNestedComments} from "@/lib/db/userDB";
 import {CommentsType} from "@/components/types/anime-types";
 import {CommentItem} from "@/components/watch/comment-item";
 import {Loader} from "lucide-react";
@@ -9,6 +8,7 @@ import {User} from "@/components/types/user";
 import CommentInput from "@/components/watch/comment-input";
 import {toast} from "sonner";
 import {Switch} from "@/components/ui/switch";
+import {getComments, getNestedComments} from "@/lib/db/userDB";
 
 interface CommentsContentProps {
     animeId: number;

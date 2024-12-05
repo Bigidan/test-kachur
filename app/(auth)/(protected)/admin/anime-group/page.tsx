@@ -1,6 +1,6 @@
 "use client"
 
-import {useCallback, useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/main/data-table";
 import {
@@ -36,7 +36,7 @@ import {
     addType, deleteAge, deleteAnimePopularity,
     deleteDirector, deleteSource, deleteStatus, deleteStudio, deleteType, getAllAges, getAllAnimePopularity,
     getAllDirectors, getAllSources, getAllStatuses, getAllStudios,
-    getAllTypes, updateAge, updateAnimePopularity,
+    getAllTypes, updateAge, updateAnimePopularity, updateAnimePopularityOrder,
     updateDirector, updateSource, updateStatus, updateStudio,
     updateType
 } from "@/lib/db/admin";
@@ -45,6 +45,7 @@ import {
 type ReferenceItem = {
     id: number;
     name: string;
+    order?: number;
 };
 
 type TabConfig = {
@@ -63,6 +64,8 @@ export default function AnimeGroupPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [editingItem, setEditingItem] = useState<ReferenceItem | null>(null);
     const [currentTab, setCurrentTab] = useState("directors");
+
+    const [draggedItem, setDraggedItem] = useState<ReferenceItem | null>(null);
 
     // Конфігурація для кожної вкладки
     const tabConfigs: Record<string, TabConfig> = useMemo(() => ({
@@ -141,12 +144,80 @@ export default function AnimeGroupPage() {
     }, [currentTab, fetchItems]);
 
 
+    const handleDragStart = (e: React.DragEvent<HTMLDivElement>, item: ReferenceItem) => {
+        // Встановлюємо перетягуваний елемент ТІЛЬКИ для вкладки animePop
+        if (currentTab === 'animePop') {
+            setDraggedItem(item);
+            e.dataTransfer?.setData('text/plain', '');
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent<HTMLTableRowElement>) => {
+        // Дозволяємо drop ТІЛЬКИ для вкладки animePop
+        if (currentTab === 'animePop') {
+            e.preventDefault();
+        }
+    };
+
+    const handleDrop = async (e: React.DragEvent<HTMLDivElement>, targetItem: ReferenceItem) => {
+        // Перевіряємо, чи це вкладка animePop
+        if (currentTab !== 'animePop') return;
+
+        e.preventDefault();
+
+        if (!draggedItem || draggedItem.id === targetItem.id) return;
+
+        // Створюємо копію поточних елементів
+        const newItems = [...currentItems];
+
+        // Знаходимо індекси елементів
+        const draggedIndex = newItems.findIndex(item => item.id === draggedItem.id);
+        const targetIndex = newItems.findIndex(item => item.id === targetItem.id);
+
+        // Видаляємо перетягуваний елемент
+        const [removed] = newItems.splice(draggedIndex, 1);
+
+        // Вставляємо на нову позицію
+        newItems.splice(targetIndex, 0, removed);
+
+        // Оновлюємо стан
+        setCurrentItems(newItems);
+
+        // Підготуємо дані для оновлення на сервері
+        try {
+            // Викликаємо функцію оновлення порядку
+            await updateAnimePopularityOrder(
+                newItems.map((item, index) => ({
+                    id: item.id,
+                    order: index + 1 // Нумерація з 1, а не з 0
+                }))
+            );
+        } catch (error) {
+            console.error('Помилка оновлення порядку:', error);
+        }
+
+        // Скидаємо стан перетягування
+        setDraggedItem(null);
+    };
+
 
     const handleAdd = async () => {
         if (name.trim()) {
             try {
                 const config = tabConfigs[currentTab];
-                await config.addFunction(name);
+
+                // Для animePop додаємо логіку визначення порядку
+                if (currentTab === 'animePop') {
+                    // Знаходимо максимальний порядок
+                    const maxOrder = Math.max(...currentItems.map(item => item['order'] || 0), 0);
+
+                    // Додаємо новий запис з наступним порядком
+                    await addAnimePopularity(name, maxOrder + 1);
+                } else {
+                    // Для інших вкладок - стандартне додавання
+                    await config.addFunction(name);
+                }
+
                 setName("");
                 await fetchItems();
             } catch (error) {
@@ -180,6 +251,8 @@ export default function AnimeGroupPage() {
         }
     }) , [currentTab, fetchItems, tabConfigs]);
 
+
+
     const columns: ColumnDef<ReferenceItem>[] = useMemo(() => [
         {
             accessorKey: "id",
@@ -188,6 +261,20 @@ export default function AnimeGroupPage() {
         {
             accessorKey: "name",
             header: "Назва",
+            cell: ({ row }) => {
+                const item = row.original;
+                return (
+                    <div
+                        draggable={currentTab === 'animePop'}
+                        onDragStart={(e) => handleDragStart(e, item)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, item)}
+                        className={currentTab === 'animePop' ? "cursor-move" : ""}
+                    >
+                        {item.name}
+                    </div>
+                );
+            }
         },
         {
             id: "actions",
@@ -224,7 +311,7 @@ export default function AnimeGroupPage() {
                 );
             },
         },
-    ], [handleDelete]);
+    ], [currentTab, handleDelete, handleDragOver, handleDragStart, handleDrop]);
 
     return (
         <div className="w-full p-4">

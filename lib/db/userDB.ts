@@ -1,11 +1,12 @@
 "use server";
 
-import { db } from "@/lib/db"; // adjust the import path as needed
+import {db} from "@/lib/db"; // adjust the import path as needed
 import {
     animeAgeTable, animeCommentsTable,
     animeDubDirectorTable,
-    animeEditingTable, animeEpisodeTable,
-    animeGenreTable,
+    animeEditingTable,
+    animeEpisodeTable,
+    animeGenreTable, animePopularityTable,
     animeSoundTable,
     animeSourceTable,
     animeStatusTable,
@@ -15,17 +16,19 @@ import {
     animeTypeTable,
     animeVideoEditingTable,
     animeVocalsTable,
-    animeVoiceActorsTable, characterTable,
-    directorTable, episodeTable,
+    animeVoiceActorsTable,
+    characterTable,
+    directorTable,
+    episodeTable,
     genreTable,
     memberTable, roleTable,
     userTable
 } from "@/lib/db/schema";
 import {and, desc, eq, isNotNull, isNull, like, or, sql} from "drizzle-orm";
-import { hashPassword, verifyPassword } from "@/lib/auth/jwt";
-import { AnimeData, CommentsType} from "@/components/types/anime-types";
+import {hashPassword, verifyPassword} from "@/lib/auth/jwt";
+import {AnimeData, CommentsType} from "@/components/types/anime-types";
 import {User as UserType, User} from "@/components/types/user";
-import {getSession} from "@/lib/auth/session"; // adjust the import path as needed
+import {getSession} from "@/lib/auth/session";
 
 
 export async function userRegister(values: {
@@ -301,6 +304,7 @@ export async function getPopularAnimeBySearch(searchQuery: string) {
     })
         .from(animeTable)
         .leftJoin(animeStatusTable, eq(animeStatusTable.statusId, animeTable.statusId))
+        .leftJoin(animePopularityTable, eq(animePopularityTable.popularityId, animeTable.animePopularityId))
         .where(
             or(
                 (like(animeTable.nameUkr, `%${searchQuery}%`)),
@@ -308,11 +312,12 @@ export async function getPopularAnimeBySearch(searchQuery: string) {
             )
         ) // Додаємо фільтрацію по назві аніме
         .orderBy(
-            animeTable.animePopularityId,
+            animePopularityTable.order,
             animeTable.statusId,
         )
         .limit(9);
 }
+
 
 export async function getComments(
     animeId: number,
@@ -321,6 +326,7 @@ export async function getComments(
     isAdmin: boolean = false,
 ): Promise<CommentsType[]> {
     // Спочатку створимо підзапит для підрахунку відповідей
+
     const repliesSubquery = db
         .select({
             parentCommentId: animeCommentsTable.parentCommentId,
@@ -377,22 +383,25 @@ export async function getNestedComments(
     limit: number = 10,
     isAdmin: boolean = false,
 ): Promise<CommentsType[]> {
-    // Підзапит для підрахунку відповідей
+
     const repliesSubquery = db
         .select({
             parentCommentId: animeCommentsTable.parentCommentId,
             repliesCount: sql<number>`count(*)`.as('repliesCount')
         })
         .from(animeCommentsTable)
-        .where(and(
-            isNotNull(animeCommentsTable.parentCommentId),
-            or(
-                eq(animeCommentsTable.isDeleted, false),
-                eq(animeCommentsTable.isDeleted, isAdmin),
-            ),
-        ))
+        .where(
+            and(
+                isNotNull(animeCommentsTable.parentCommentId),
+                or(
+                    eq(animeCommentsTable.isDeleted, false),
+                    eq(animeCommentsTable.isDeleted, isAdmin),
+                ),
+            )
+        )
         .groupBy(animeCommentsTable.parentCommentId)
         .as('repliesSubquery');
+
 
     return db.select({
         comment: animeCommentsTable,
@@ -472,7 +481,7 @@ export async function deleteComment(commentId: number) {
         }
     });
 
-    if  (user.roleId !== 3){
+    if (user.roleId !== 3) {
         if (!selectedComment || selectedComment.userId !== user.userId) {
             throw new Error('Ви не маєте права видаляти цей коментар');
         }
@@ -481,9 +490,9 @@ export async function deleteComment(commentId: number) {
 
     await db
         .update(animeCommentsTable)
-        .set({ isDeleted: true, })
+        .set({isDeleted: true,})
         .where(eq(animeCommentsTable.commentId, commentId));
 
-    return { success: true, message: 'Успіх!' };
+    return {success: true, message: 'Успіх!'};
 
 }

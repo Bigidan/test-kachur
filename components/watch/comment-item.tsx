@@ -5,9 +5,9 @@ import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {CommentsType} from "@/components/types/anime-types";
 import {Spoiler} from "@/components/watch/spoiler-text";
-import {deleteComment} from "@/lib/db/userDB";
 import {toast} from "sonner";
 import {cn} from "@/lib/utils";
+import {deleteComment} from "@/lib/db/userDB";
 
 export const parseCommentWithSpoilers = (text: string) => {
     // const spoilerRegex = /\[spoiler\]([\s\S]*?)\[\/spoiler\]/g;

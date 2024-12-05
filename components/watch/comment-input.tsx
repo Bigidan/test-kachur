@@ -6,7 +6,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CommentTextarea } from "@/components/ui/commnet-textarea";
-import { sendComment } from "@/lib/db/userDB";
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel,
     AlertDialogContent, AlertDialogFooter,
@@ -14,6 +13,7 @@ import {
     AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {CommentsType} from "@/components/types/anime-types";
+import {sendComment} from "@/lib/db/userDB";
 
 interface CommentInputProps {
     user: UserType | null;
@@ -91,11 +91,6 @@ const CommentInput: React.FC<CommentInputProps> = ({ user, animeId, onCommentAdd
             setIsSubmitting(false);
         }
     };
-
-    const handleCancel = async () => {
-        setErrorDialogText("Ви точно хочете скасувати?");
-        setIsErrorDialogOpen(true);
-    }
 
     return (
         <div className="w-full flex flex-row items-center justify-center bg-[#676767] p-7 gap-2 rounded-lg relative">

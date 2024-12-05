@@ -33,6 +33,7 @@ export const animeStudioTable = sqliteTable('anime_studio', {
 export const animePopularityTable = sqliteTable('anime_popularity', {
     popularityId: integer('popularity_id').primaryKey(),
     popularity: text('popularity').notNull(),
+    order: integer('order').default(0),
 });
 
 export const animeTable = sqliteTable('anime', {
@@ -164,6 +165,14 @@ export const animeCommentsTable = sqliteTable('anime_comments', {
     comment: text('comment').notNull(),
     updateDate: integer('release_date', { mode: 'timestamp' }).notNull(),
     isDeleted: integer('is_deleted', { mode: 'boolean' }).notNull(),
+});
+
+export const animeCommentsLikesTable = sqliteTable('anime_comments_likes', {
+    likeId: integer('like_id').primaryKey(),
+    commentId: integer('comment_id', { mode: 'number' }).references(() => animeCommentsTable.commentId),
+    userId: integer('user_id', { mode: 'number' }).references(() => userTable.userId),
+    isLike: integer('is_like', { mode: 'boolean' }).notNull(), // true для лайка, false для дизлайка
+    likeDate: integer('like_date', { mode: 'timestamp' }).notNull()
 });
 
 
