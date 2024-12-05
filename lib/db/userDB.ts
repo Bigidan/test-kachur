@@ -272,13 +272,23 @@ export async function getAllEpisodesForAnime(searchAnimeId: number){
 }
 
 export async function getCharactersByActorId(searchUserId: number, searchFromAnime: number) {
-    return db.select().from(characterTable)
+    return db.select({
+        name: characterTable.name,
+        animeId: characterTable.animeId,
+        image: characterTable.image,
+        popularityId: animePopularityTable.popularityId,
+        characterId: characterTable.characterId,
+        voiceActorId: characterTable.voiceActorId,
+    }).from(characterTable)
         .where(eq(characterTable.voiceActorId, searchUserId))
+        .leftJoin(animeTable, eq(animeTable.animeId, characterTable.animeId))
+        .leftJoin(animePopularityTable, eq(animePopularityTable.popularityId, animeTable.animePopularityId))
         .orderBy(
             // Спочатку сортуємо, якщо animeId відповідає searchFromAnime
             sql`CASE WHEN ${characterTable.animeId} = ${searchFromAnime} THEN 0 ELSE 1 END`,
             // Далі сортуємо за popularityId
             characterTable.popularityId,
+            animePopularityTable.order,
         )
         .limit(8);
 }
