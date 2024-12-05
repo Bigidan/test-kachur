@@ -8,6 +8,7 @@ import {Loader} from "lucide-react";
 import {User} from "@/components/types/user";
 import CommentInput from "@/components/watch/comment-input";
 import {toast} from "sonner";
+import {Switch} from "@/components/ui/switch";
 
 interface CommentsContentProps {
     animeId: number;
@@ -223,12 +224,11 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
         <div className="mt-6 space-y-4">
             {user?.roleId === 3 && ( // Чекбокс тільки для адміністратора
                 <div className="flex items-center mb-4">
-                    <input
-                        type="checkbox"
+                    <Switch
                         id="showDeletedComments"
                         checked={showDeletedComments}
-                        onChange={() => setShowDeletedComments(prev => !prev)}
-                        className="mr-2"
+                        onCheckedChange={() => setShowDeletedComments(prev => !prev)}
+                        className="mr-2 min-h-6"
                     />
                     <label htmlFor="showDeletedComments" className="text-sm text-gray-700">Показувати видалені коментарі</label>
                 </div>

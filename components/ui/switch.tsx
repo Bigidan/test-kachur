@@ -33,7 +33,7 @@ const Switch = React.forwardRef<
             >
                 <SwitchPrimitives.Thumb
                     className={cn(
-                        "pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0 flex items-center justify-center"
+                        "pointer-events-none h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0 flex items-center justify-center"
                     )}
                 >
                     {checked ? <BsPlayFill /> : <BsPauseFill />}
