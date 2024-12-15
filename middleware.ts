@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
         const parsed = await getSession();
         const user = parsed?.user as User;
         if (user != undefined && user.roleId  === 3) return;
-        else return NextResponse.rewrite(new URL("/watch/trigger-not-found", request.url));
+        else return NextResponse.rewrite(new URL("/watch/n", request.url));
     }
 
 }

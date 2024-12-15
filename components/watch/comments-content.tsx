@@ -9,6 +9,7 @@ import CommentInput from "@/components/watch/comment-input";
 import {toast} from "sonner";
 import {Switch} from "@/components/ui/switch";
 import {getComments, getNestedComments} from "@/lib/db/userDB";
+import Image from "next/image";
 
 interface CommentsContentProps {
     animeId: number;
@@ -249,7 +250,7 @@ const CommentsContent = forwardRef<CommentsContentRef, CommentsContentProps>(({ 
                     </div>
                 </>
             ) : (
-                <p className="w-full text-center p-7">Ще ніхто не крякнув.</p>
+                <p className="text-center text-gray-500 mt-4"><Image src="/no_comments.webp" alt="Ще ніхто не крякнув." width={500} height={500} className="mx-auto"/></p>
             )}
         </div>
     );

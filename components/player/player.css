@@ -22,7 +22,8 @@
 .video_controls_container::before {
     content: "";
     position: absolute;
-    bottom: 0;
+    bottom: -1px;
+    left: 0;
     background: linear-gradient(to top, rgba(0, 0, 0, .75), transparent);
     width: 100%;
     aspect-ratio: 12 / 1;

@@ -20,6 +20,7 @@ export type Anime = {
     headerImage: string | null;
     shortDescription: string | null;
     popularity: number | null;
+    monobankRef: string | null;
 };
 
 export type AnimeType = {
@@ -107,6 +108,7 @@ export interface AnimeData {
         headerImage: string | null;
 
         existedEpisodes: number,
+        monobankRef: string | null,
     }[];
     translate: {
         memberNickname: string | null,

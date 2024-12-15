@@ -11,11 +11,12 @@ import {getAllAnimeData} from "@/lib/db/userDB";
 import Image from "next/image";
 import StaffHoverCard from "@/components/watch/member-hover-card";
 import {cn} from "@/lib/utils";
-import {notFound} from "next/navigation";
+
 import {getSession} from "@/lib/auth/session";
 import {User as UserType} from "@/components/types/user";
 
 import CommentsSection from "@/components/watch/comment-sectio"
+import NotFoundK from "@/app/(main)/not-found";
 
 
 export default async function WatchPage({
@@ -28,7 +29,7 @@ export default async function WatchPage({
     const user = parsed?.user as UserType;
 
     const watchId = (await params).watchId;
-    if (isNaN(Number(watchId))) return notFound();
+    if (isNaN(Number(watchId))) return <NotFoundK/>;
 
     const animeData: AnimeData = await getAllAnimeData(Number(watchId));
     const {
@@ -42,6 +43,8 @@ export default async function WatchPage({
         vocals: animeVocals,
         voiceActors: animeVoiceActors,
     } = animeData;
+
+    if (animeDataEx.length < 1) return <NotFoundK/>;
 
     const formatDateToString = (date: Date): string => {
         const day = String(date.getDate()).padStart(2, '0');
@@ -129,10 +132,16 @@ export default async function WatchPage({
                                     <Image src="/bookmark.svg" alt="" width={32} height={32}/>
                                     <span className="uppercase font-bold">ДОДАТИ В ОБРАНЕ</span>
                                 </Button>
-                                <Button variant="kachurGrad" size="kachurGrad" className="gap-4">
-                                    <Image src="/mono.svg" width={47} height={47} alt=""/>
-                                    <span className="font-bold uppercase">Підтримати проєкт</span>
+
+
+                                <Button variant="kachurGrad" size="kachurGrad">
+                                    <a target="_blank" href={animeDataEx[0].monobankRef || "/"} className="flex items-center gap-4">
+                                        <Image src="/mono.svg" width={47} height={47} alt=""/>
+                                        <span className="font-bold uppercase">Підтримати проєкт</span>
+                                    </a>
                                 </Button>
+
+
                             </div>
                         </div>
 

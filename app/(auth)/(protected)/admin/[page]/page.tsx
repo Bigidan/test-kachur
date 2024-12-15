@@ -10,10 +10,23 @@ import {
     SidebarFooter, SidebarGroupLabel, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton,
 } from "@/components/ui/sidebar";
 
-import {Suspense, useState} from 'react';
+import {Suspense, useEffect, useState} from 'react';
 
 import Link from "next/link";
-import { Home, LayoutGrid, Layers, SquareLibrary, FileUser, LayoutDashboard, Pen, Users, UserRoundCog, Image as ImageIco, FileVideo } from "lucide-react";
+import {
+    Home,
+    LayoutGrid,
+    Layers,
+    SquareLibrary,
+    FileUser,
+    LayoutDashboard,
+    Pen,
+    Users,
+    UserRoundCog,
+    Image as ImageIco,
+    FileVideo,
+    CakeSlice
+} from "lucide-react";
 
 import Image from "next/image";
 import * as React from "react";
@@ -26,6 +39,8 @@ import TeamPage from "@/app/(auth)/(protected)/admin/team/page";
 import RolePage from "@/app/(auth)/(protected)/admin/role/page";
 import UserPage from "@/app/(auth)/(protected)/admin/user/page";
 import GenrePage from "@/app/(auth)/(protected)/admin/genre/page";
+import { useRouter, useSearchParams } from "next/navigation";
+import KachurTeamPage from "@/app/(auth)/(protected)/admin/kachur-team/page";
 
 const items = [
     { title: "Головна", key: "home", icon: Home },
@@ -40,9 +55,11 @@ const data = [
 ];
 
 const administrative = [
+    { title: "Качури", key: "kachurs", icon: CakeSlice },
     { title: "Команда", key: "team", icon: Users },
     { title: "Ролі", key: "roles", icon: Pen },
     { title: "Користувачі", key: "users", icon: UserRoundCog },
+
 ];
 
 const files = [
@@ -52,6 +69,21 @@ const files = [
 
 const AdminPage = () =>  {
     const [activePage, setActivePage] = useState("home");
+    const searchParams = useSearchParams();
+    const router = useRouter();
+
+    useEffect(() => {
+        const pageFromQuery = searchParams.get("s");
+        if (pageFromQuery) {
+            setActivePage(pageFromQuery);
+        }
+    }, [searchParams]);
+
+    const handlePageChange = (page: string) => {
+        setActivePage(page);
+        router.push(`/admin/s?s=${page}`); // Оновлення URL
+    };
+
 
     // Функція для рендеру вмісту залежно від обраної сторінки
     const renderPage = () => {
@@ -74,6 +106,13 @@ const AdminPage = () =>  {
                 return <RolePage />;
             case "users":
                 return <UserPage />;
+            case "kachurs":
+                return <KachurTeamPage/>
+
+            // case "images":
+            //     return <ServerImages />;
+            // case "video":
+            //     return <ServerVideo />;
 
             default:
                 return <div>Виберіть пункт меню</div>;
@@ -97,7 +136,7 @@ const AdminPage = () =>  {
                                 {items.map((item) => (
                                     <SidebarMenuItem key={item.key}>
                                         <SidebarMenuButton asChild>
-                                            <button onClick={() => setActivePage(item.key)}>
+                                            <button onClick={() => handlePageChange(item.key)}>
                                                 <item.icon />
                                                 <span>{item.title}</span>
                                             </button>
@@ -114,7 +153,7 @@ const AdminPage = () =>  {
                                 {data.map((item) => (
                                     <SidebarMenuItem key={item.key}>
                                         <SidebarMenuButton asChild>
-                                            <button onClick={() => setActivePage(item.key)}>
+                                            <button onClick={() => handlePageChange(item.key)}>
                                                 <item.icon />
                                                 <span>{item.title}</span>
                                             </button>
@@ -131,7 +170,7 @@ const AdminPage = () =>  {
                                 {administrative.map((item) => (
                                     <SidebarMenuItem key={item.key}>
                                         <SidebarMenuButton asChild>
-                                            <button onClick={() => setActivePage(item.key)}>
+                                            <button onClick={() => handlePageChange(item.key)}>
                                                 <item.icon />
                                                 <span>{item.title}</span>
                                             </button>
@@ -148,7 +187,7 @@ const AdminPage = () =>  {
                                 {files.map((item) => (
                                     <SidebarMenuItem key={item.key}>
                                         <SidebarMenuButton asChild>
-                                            <button onClick={() => setActivePage(item.key)}>
+                                            <button onClick={() => handlePageChange(item.key)}>
                                                 <item.icon />
                                                 <span>{item.title}</span>
                                             </button>

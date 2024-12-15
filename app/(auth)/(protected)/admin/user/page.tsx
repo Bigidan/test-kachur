@@ -50,6 +50,8 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination"
+import PhotoUpload from "@/components/file/photo-upload";
+
 
 type User = {
     userId: number;
@@ -299,6 +301,13 @@ export default function UserPage() {
     const [open, setOpen] = useState(false)
     const [value, setValue] = useState("20")
 
+    const handleArtFileUpload = (fileUrl: string | null) => {
+        setFormData({...formData, art: fileUrl ? fileUrl : ""});
+    };
+    const handlePhotoFileUpload = (fileUrl: string | null) => {
+        setFormData({...formData, image: fileUrl ? fileUrl : ""});
+    };
+
     return (
         <div className="w-full flex flex-col space-x-3 p-4">
             <div className="flex items-center mb-4 space-x-5 p-4">
@@ -400,7 +409,7 @@ export default function UserPage() {
             </Pagination>
 
             <Dialog open={isEditing} onOpenChange={(open) => !open && resetForm()}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
                         <DialogTitle>Редагування користувача</DialogTitle>
                         <DialogDescription>
@@ -517,6 +526,23 @@ export default function UserPage() {
                                 className="col-span-3"
                             />
                         </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Файл Зображення</Label>
+                            <PhotoUpload onFileUpload={handlePhotoFileUpload} fileName={formData.name}/>
+
+                            {formData.image && (
+                                <>
+                                    <Label className="text-right">Завантажений файл:</Label>
+                                    <img
+                                        src={formData.image}
+                                        alt="Завантажений файл"
+                                        height={50}
+                                        width={50}
+                                    />
+                                </>
+                            )}
+                        </div>
+
 
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="art" className="text-right">
@@ -529,6 +555,22 @@ export default function UserPage() {
                                 onChange={(e) => setFormData({...formData, art: e.target.value})}
                                 className="col-span-3"
                             />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Файл Арту</Label>
+                            <PhotoUpload onFileUpload={handleArtFileUpload} fileName={formData.name}/>
+
+                            {formData.art && (
+                                <>
+                                    <Label className="text-right">Завантажений файл:</Label>
+                                    <img
+                                        src={formData.art}
+                                        alt="Завантажений файл"
+                                        height={50}
+                                        width={50}
+                                    />
+                                </>
+                            )}
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label className="text-right">

@@ -49,7 +49,7 @@ export class EpisodeService {
                     episodeId: "2",
                     episodeName: "Бабця проти бабці",
                     episodeNumber: 3,
-                    url: `http://192.168.178.26/episodes/${watchId}/3_1080.mp4`,
+                    url: `http://localhost:3000/uploads/series/d3bc59cb-7913-4ce8-b85f-582c5d87fae5-_________________3___________.mp4`,
                     cover: "Стрьомна жінка",
 
                     opStart: 222,

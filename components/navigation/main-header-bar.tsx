@@ -1,3 +1,5 @@
+"use client";
+
 import {
     Cloud,
     SlidersVertical,
@@ -8,15 +10,16 @@ import {
     UserPlus,
     Users,
     Ellipsis,
+    Search, SlidersHorizontal,
 } from "lucide-react"
 
 import { User as UserType } from "@/components/types/user";
 
 import Image from 'next/image'
 
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { HeaderNavigation } from "@/components/navigation/header-navigation";
-import { ModeToggle } from "@/components/mode-toggle";
+// import { ModeToggle } from "@/components/mode-toggle";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import { Button } from '../ui/button';
 import { DropdownMenu,
@@ -26,17 +29,29 @@ import { DropdownMenu,
 import Link from "next/link";
 import {getSession} from "@/lib/auth/session";
 import LogOutButton from "@/components/navigation/log-out-button";
+import {Input} from "@/components/ui/input";
+import PopAnimeComponent from "@/components/main/pop-anime-component";
 
-const MainHeaderBar = async () => {
+const MainHeaderBar = () => {
 
-    const parsed = await getSession();
-    const user = parsed?.user as UserType;
+    const [searchQuery, setSearchQuery] = useState('');
+    const [user, setUser] = useState<UserType>();
+
+    const fetchUser = async () => {
+        const parsed = await getSession();
+        setUser(parsed?.user as UserType);
+    }
+
+    useEffect(() => {
+        fetchUser();
+    }, []);
+
 
 
     return (
         <header
-            className="p-5 sticky top-0 z-40 w-full border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-14 max-w-screen-2xl items-center justify-around">
+            className="py-5 sticky top-0 z-40 w-full border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="mx-auto flex h-14 max-w-screen-2xl items-center justify-between" style={{ maxWidth: '70%' }}>
                 <Link href="/">
                     <div className="mr-4 flex max-lg:hidden items-center justify-between space-x-2">
                         <Image src="/logo.png" alt="logo" width="70" height="70"/>
@@ -45,6 +60,30 @@ const MainHeaderBar = async () => {
                 </Link>
                 <div className="flex items-center justify-between space-x-6 max-lg:justify-end">
                     <HeaderNavigation />
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon" className="focus-visible:ring-offset-0 focus-visible:ring-0">
+                                <Search/>
+                                <span className="sr-only">Пошук</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[1200px] p-4">
+                            <div className="flex">
+                                <Input placeholder="Пошук"
+                                       value={searchQuery}
+                                       onChange={(e) => setSearchQuery(e.target.value)}
+                                       className="bg-transparent border-transparent outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"/>
+                                <Button variant="ghost" size="icon">
+                                    <SlidersHorizontal/>
+                                </Button>
+                            </div>
+                            <div>
+                                <PopAnimeComponent searchQuery={searchQuery} infiniteScroll={false}/>
+                            </div>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
                     <div className="mx-12">
                         {user != undefined ? (
                         <DropdownMenu>
@@ -56,7 +95,6 @@ const MainHeaderBar = async () => {
                                 </Avatar>
                             </Button>
                         </DropdownMenuTrigger>
-
 
 
                         <DropdownMenuContent className="w-56">
@@ -96,18 +134,18 @@ const MainHeaderBar = async () => {
                                             <DropdownMenuItem asChild>
                                                 <Link href="/admin/s?s=users">
                                                 <UserPlus />
-                                                Додавання
+                                                Користувачі
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
-                                                <Link href="/admin/s?s=anime">
+                                                <Link href="/admin/s?s=home">
                                                 <SlidersVertical />
                                                 Модерація
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem asChild>
-                                                <Link href="/admin/s?s=anime_group">
+                                                <Link href="/admin/s?s=animeGroups">
                                                 <Ellipsis />
                                                 Інше
                                                 </Link>
@@ -141,7 +179,7 @@ const MainHeaderBar = async () => {
                             <LogOutButton/>
                         </DropdownMenuContent>
 
-                    </DropdownMenu>
+                        </DropdownMenu>
                         ) : <div className="flex text-sm flex-row gap-2">
                             <Button asChild variant="outline">
                                 <Link href="/login">Увійти</Link>
@@ -152,7 +190,10 @@ const MainHeaderBar = async () => {
                         </div>
                         }
                     </div>
-                    <ModeToggle/>
+                    {/*<ModeToggle/>*/}
+
+
+
                 </div>
             </div>
         </header>

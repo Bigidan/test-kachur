@@ -19,8 +19,8 @@ import {
     animeVoiceActorsTable,
     characterTable,
     directorTable,
-    episodeTable,
-    genreTable,
+    episodeTable, filesTable,
+    genreTable, kachurTeamTable,
     memberTable,
     popularityTable,
     roleTable,
@@ -432,6 +432,7 @@ export async function getAllAnime(): Promise<Anime[]> {
         headerImage: animeTable.headerImage,
         shortDescription: animeTable.shortDescription,
         popularity: animeTable.animePopularityId,
+        monobankRef: animeTable.monobankRef,
 
     }).from(animeTable).leftJoin(animeStatusTable, eq(animeTable.statusId, animeStatusTable.statusId));
 }
@@ -456,6 +457,7 @@ export async function updateAnime(
     trailerLink: string,
     headerImage: string,
     shortDescription: string,
+    monobankRef: string,
 ): Promise<void> {
     await db.update(animeTable)
         .set({
@@ -476,6 +478,7 @@ export async function updateAnime(
             headerImage,
             shortDescription,
             animePopularityId,
+            monobankRef,
         })
         .where(eq(animeTable.animeId, animeId));
 }
@@ -504,6 +507,7 @@ export async function addAnime(
     trailerLink: string,
     headerImage: string,
     shortDescription: string,
+    monobankRef: string,
 ): Promise<void> {
     await db.insert(animeTable).values({
         typeId: typeId,
@@ -523,6 +527,7 @@ export async function addAnime(
         headerImage: headerImage,
         shortDescription: shortDescription,
         animePopularityId: animePopularityId,
+        monobankRef: monobankRef,
     })
 }
 
@@ -540,13 +545,14 @@ export async function addEpisode(
     animeId: number,
     name: string,
     number: number,
+    quality: string,
     opStart: number,
     opEnd: number,
     endStart: number,
     endEnd: number,
     cover: string
 ) {
-    const episode = await addEpisodeToAnime(name, number, opStart, opEnd, endStart, endEnd, cover);
+    const episode = await addEpisodeToAnime(name, number, quality, opStart, opEnd, endStart, endEnd, cover);
     const episodeId = episode[0]?.id;
     return await linkEpisodeToAnime(animeId, episodeId);
 }
@@ -554,6 +560,7 @@ export async function addEpisode(
 export async function addEpisodeToAnime(
     name: string,
     number: number,
+    quality: string,
     opStart: number,
     opEnd: number,
     endStart: number,
@@ -565,6 +572,7 @@ export async function addEpisodeToAnime(
     return db.insert(episodeTable).values({
         name: name,
         number: number,
+        quality: quality,
         opStart: opStart,
         opEnd: opEnd,
         endStart: endStart,
@@ -900,6 +908,7 @@ export async function getAllAnimeData() {
             headerImage: animeTable.headerImage,
             shortDescription: animeTable.shortDescription,
             popularity: animeTable.animePopularityId,
+            monobankRef: animeTable.monobankRef,
 
         }).from(animeTable).leftJoin(animeStatusTable, eq(animeTable.statusId, animeStatusTable.statusId)),
 
@@ -949,4 +958,45 @@ export async function getAllAnimeData() {
         directors,
         animePopularitys
     };
+}
+
+export async function addFileToBase(
+    fileName: string,
+    fileUrl: string,
+    fileType: number,
+) {
+    return db.insert(filesTable).values({
+        fileName: fileName,
+        fileUrl: fileUrl,
+        fileType: fileType,
+    }).returning({ id: filesTable.fileId })
+}
+
+export async function getAllKachurTeam() {
+    return db.select().from(kachurTeamTable);
+}
+
+export async function deleteKachurTeamMember(kachurId: number) {
+    await db.delete(kachurTeamTable).where(eq(kachurTeamTable.kachurId, kachurId));
+    return { success: true };
+}
+
+export async function addKachurTeamMember(memberId: number, type: number, positionId: number ) {
+    return db.insert(kachurTeamTable).values({
+        memberId: memberId,
+        type: type,
+        positionId: positionId,
+    }).returning({ id: kachurTeamTable.kachurId });
+}
+
+export async function updateKachurTeamMember(kachurId: number, memberId: number, type: number, positionId: number){
+    await db.update(kachurTeamTable)
+        .set({
+            memberId: memberId,
+            type: type,
+            positionId: positionId,
+        })
+        .where(eq(kachurTeamTable.kachurId, kachurId));
+
+    return { success: true };
 }

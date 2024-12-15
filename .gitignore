@@ -19,6 +19,8 @@
 
 # production
 /build
+/public/uploads/
+/uploads/
 
 # misc
 .DS_Store

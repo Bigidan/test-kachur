@@ -6,54 +6,30 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import {
     NavigationMenu,
-    NavigationMenuContent,
     NavigationMenuItem,
     NavigationMenuLink,
     NavigationMenuList,
-    NavigationMenuTrigger,
     navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
-import Image from "next/image";
-
-const components: { title: string; href: string; description: string }[] = [
-    {
-        title: "Ну це перший жанр",
-        href: "/docs/primitives/alert-dialog",
-        description:
-            "А це його великий опис, який має показати що за хуйню я зробив.",
-    },
-    {
-        title: "Другий жанр",
-        href: "/docs/primitives/hover-card",
-        description:
-            "А-ба-ба-га-ла-ма-га.",
-    },
-    {
-        title: "Третій жанр",
-        href: "/docs/primitives/progress",
-        description:
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi eget nulla id metus eleifend fermentum. Ut aliquet nec..",
-    },
-    {
-        title: "Четвертий жанр",
-        href: "/docs/primitives/scroll-area",
-        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed blandit purus sed euismod sollicitudin. Nunc augue tellus, venenatis.",
-    },
-    {
-        title: "П'ятий жанр",
-        href: "/docs/primitives/tabs",
-        description:
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec dictum arcu a vehicula finibus. Ut bibendum maximus nisl.",
-    },
-    {
-        title: "Шостий жанр",
-        href: "/docs/primitives/tooltip",
-        description:
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce lobortis lacus metus, posuere elementum ante posuere vitae. Integer.",
-    },
-]
+} from "@/components/ui/navigation-menu";
 
 export function HeaderNavigation() {
+
+    const handleNavigation = (e: React.MouseEvent) => {
+        e.preventDefault(); // Запобігає стандартному переходу за посиланням
+        const targetId = 'target-element'; // ID елемента для скролу
+
+        if (window.location.pathname !== '/') {
+            // Якщо не на головній сторінці, редиректимось на головну
+            window.location.href = `/#${targetId}`;
+        } else {
+            // Якщо на головній, скролимо до елемента
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    };
+
     return (
         <NavigationMenu>
             <NavigationMenuList>
@@ -66,65 +42,30 @@ export function HeaderNavigation() {
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                    <NavigationMenuTrigger>Проєкти</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                        <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                            <li className="row-span-4">
-                                <NavigationMenuLink asChild>
-                                    <Link
-                                        className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                                        href="/"
-                                    >
-
-                                        <Image src="/logo.png" alt="logo" width="70" height="70"/>
-                                        <p className="text-sm leading-tight text-muted-foreground">
-                                            Наша команда робить дубляж аніме і не тільки, тому пропонуємо Вам переглянути наші роботи нижче.
-                                        </p>
-                                    </Link>
-                                </NavigationMenuLink>
-                            </li>
-                            <ListItem href="/docs" title="Аніме 1">
-                                Короткий опис. Може рейтинг.
-                            </ListItem>
-                            <ListItem href="/docs/installation" title="Аніме 2">
-                                Короткий опис. Може рейтинг.
-                            </ListItem>
-                            <ListItem href="/docs/primitives/typography" title="Аніме 3">
-                                Короткий опис. Може рейтинг.
-                            </ListItem>
-                            <ListItem href="/docs/primitives/typography" title="Аніме 4">
-                                Короткий опис. Може рейтинг.
-                            </ListItem>
-                        </ul>
-                    </NavigationMenuContent>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                    <NavigationMenuTrigger>Актори</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                            {components.map((component) => (
-                                <ListItem
-                                    key={component.title}
-                                    title={component.title}
-                                    href={component.href}
-                                >
-                                    {component.description}
-                                </ListItem>
-                            ))}
-                        </ul>
-                    </NavigationMenuContent>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                    <Link href="/" legacyBehavior passHref>
+                    <Link href="/#target-element" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                            Про нас
+                            <div onClick={handleNavigation}>Проєкти</div>
                         </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href="/" legacyBehavior passHref>
+                    <Link href="/team" legacyBehavior passHref>
+                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                            Наша команда
+                        </NavigationMenuLink>
+                    </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                    <Link href="/contacts" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                             Контакти
+                        </NavigationMenuLink>
+                    </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                    <Link href="/about" legacyBehavior passHref>
+                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                            Про нас
                         </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>

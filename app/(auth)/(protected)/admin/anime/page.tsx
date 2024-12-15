@@ -39,6 +39,7 @@ import {InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot} from "@/compon
 import {Textarea} from "@/components/ui/textarea";
 import {Checkbox} from "@/components/ui/checkbox";
 import DropdownSelect from "@/components/main/dropdown-select";
+import PhotoUpload from "@/components/file/photo-upload";
 
 type ReferenceItem = {
     id: number;
@@ -201,6 +202,7 @@ export default function AnimePage() {
                 formData.trailerLink || "",
                 formData.headerImage || "",
                 formData.shortDescription || "",
+                formData.monobankRef || "",
             );
 
             await fetchAnimes();
@@ -234,6 +236,7 @@ export default function AnimePage() {
                 formData.trailerLink || "",
                 formData.headerImage || "",
                 formData.shortDescription || "",
+                formData.monobankRef || "",
             );
 
             await fetchAnimes();
@@ -498,6 +501,9 @@ export default function AnimePage() {
     ];
 
 
+    const handleFileUpload = (fileUrl: string | null) => {
+        setFormData({...formData, headerImage: fileUrl});
+    };
 
     return (
         <div className="w-full flex flex-col space-x-3 p-4">
@@ -1444,6 +1450,34 @@ export default function AnimePage() {
                                 className="col-span-3"
                             />
                         </div>
+                        <div>
+                            <Label className="text-right">Файл Зображення</Label>
+                            <PhotoUpload onFileUpload={handleFileUpload}
+                                         fileName={formData.nameUkr || "" + formData.nameEng}/>
+                            {formData.headerImage && (
+                                <>
+                                    <Label className="text-right">Завантажений файл:</Label>
+                                    <img
+                                        src={formData.headerImage}
+                                        alt="Завантажений файл"
+                                        height={50}
+                                        width={50}
+                                    />
+                                </>
+                            )}
+                        </div>
+
+                        <div>
+                            <Label htmlFor="monobankRef" className="text-right">
+                                Monobanka
+                            </Label>
+                            <Input
+                                id="monobankRef"
+                                value={formData.monobankRef || ""}
+                                onChange={(e) => setFormData({...formData, monobankRef: e.target.value})}
+                                className="col-span-3"
+                            />
+                        </div>
 
                     </div>
                     <DialogFooter>
@@ -1459,7 +1493,7 @@ export default function AnimePage() {
 
 
             <Dialog open={isAssociationsDialogOpen} onOpenChange={(open) => !open && resetForm()}>
-                <DialogContent className="sm:max-w-[1225px]">
+            <DialogContent className="sm:max-w-[1225px]">
                     <DialogHeader>
                         <DialogTitle>Призначення зв&#39;язків</DialogTitle>
                         <DialogDescription>Виберіть жанри, перекладачів, редакторів, звукорежисерів та інших

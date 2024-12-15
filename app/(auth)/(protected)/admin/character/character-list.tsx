@@ -28,6 +28,7 @@ import {
     PaginationPrevious
 } from "@/components/ui/pagination";
 import {cn} from "@/lib/utils";
+import PhotoUpload from "@/components/file/photo-upload";
 
 
 type Character = {
@@ -186,10 +187,14 @@ export default function CharacterList() {
         { accessorKey: "characterId", header: "Айді" },
         { accessorKey: "name", header: "Ім'я персонажа" },
         { accessorKey: "image", header: "Зображення", cell: ({row}) => (
-            <img src={row.original.image || ""}
-            alt={row.original.name}
-            width="100px" height="100px" style={{ objectFit: "cover" }} />
-            ) },
+
+            <div className="w-[100px] h-[100px]">
+                <img src={row.original.image || ""}
+                alt={row.original.name}
+                width={100} height={100} style={{ objectFit: "cover" }} />
+            </div>
+            )
+        },
         { accessorKey: "animeName", header: "Аніме" },
         { accessorKey: "popularityName", header: "Популярність" },
         { accessorKey: "voiceActroName", header: "Озвучує" },
@@ -208,7 +213,6 @@ export default function CharacterList() {
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem
                                 onClick={() => {
-                                console.log(editCharacterId);
                                 setEditCharacterId(character.characterId);
 
                                 setEditName(character.name);
@@ -292,6 +296,14 @@ export default function CharacterList() {
         )
     }
 
+    const handleFileUpload = (fileUrl: string | null) => {
+        setImage(fileUrl ? fileUrl : "");
+    };
+
+    const handleEditFileUpload = (fileUrl: string | null) => {
+        setEditImage(fileUrl ? fileUrl : "");
+    };
+
     return (
         <div className="w-full flex flex-col space-x-3 p-4">
             <div className="flex items-center mb-4 space-x-5 p-4">
@@ -322,6 +334,21 @@ export default function CharacterList() {
                                     onChange={(e) => setEditImage(e.target.value)}
                                     className="col-span-3"
                                 />
+
+                                <Label className="text-right">Файл Зображення</Label>
+                                <PhotoUpload onFileUpload={handleEditFileUpload} fileName={editName} />
+
+                                {editImage && (
+                                    <>
+                                        <Label className="text-right">Завантажений файл:</Label>
+                                        <img
+                                            src={editImage}
+                                            alt="Завантажений файл"
+                                            height={200}
+                                            width={200}
+                                        />
+                                    </>
+                                )}
 
                             </div>
 
@@ -449,12 +476,26 @@ export default function CharacterList() {
 
                         <div className="grid gap-4 py-4 animeDialog">
                             <div className="">
-                                <Label htmlFor="name">Ім&#39;я</Label>
+                                <Label htmlFor="name" className="text-right">Ім&#39;я</Label>
                                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)}
                                        className="col-span-3"/>
-                                <Label htmlFor="image">Зображення</Label>
+                                <Label htmlFor="image" className="text-right">Зображення</Label>
                                 <Input id="image" value={image} onChange={(e) => setImage(e.target.value)}
                                        className="col-span-3"/>
+
+                                <Label className="text-right">Файл Зображення</Label>
+                                <PhotoUpload onFileUpload={handleFileUpload} fileName={name}/>
+                                {image && (
+                                    <>
+                                        <Label className="text-right">Завантажений файл:</Label>
+                                        <img
+                                            src={image}
+                                            alt="Завантажений файл"
+                                            height={100}
+                                            width={100}
+                                        />
+                                    </>
+                                )}
                             </div>
 
                             <div>

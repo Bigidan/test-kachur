@@ -56,7 +56,9 @@ export const animeTable = sqliteTable('anime', {
     shortDescription: text('short_description'),
     animePopularityId: integer('anime_popularity_id', { mode: 'number' }).references(() => animePopularityTable.popularityId),
     ducks: integer('ducks', { mode: 'number' }),
+    monobankRef: text('monobank_ref'),
 });
+
 
 export const genreTable = sqliteTable('genre', {
     genreId: integer('genre_id').primaryKey(),
@@ -88,6 +90,7 @@ export const userTable = sqliteTable('user', {
 export const memberTable = sqliteTable('member', {
     memberId: integer('member_id').primaryKey(),
     userId: integer('user_id', { mode: 'number' }).references(() => userTable.userId),
+    memberType: integer('member_type', { mode: 'number' }).default(0),
 });
 
 export const animeTranslateTable = sqliteTable('anime_translate', {
@@ -118,6 +121,7 @@ export const episodeTable = sqliteTable('episode', {
     episodeId: integer('episode_id').primaryKey(),
     name: text('name').notNull(),
     number: integer('number').notNull(),
+    quality: text('quality').notNull(),
     opStart: integer('op_start', { mode: 'number' }),
     opEnd: integer('op_end', { mode: 'number' }),
     endStart: integer('end_start', { mode: 'number' }),
@@ -175,4 +179,18 @@ export const animeCommentsLikesTable = sqliteTable('anime_comments_likes', {
     likeDate: integer('like_date', { mode: 'timestamp' }).notNull()
 });
 
+export const filesTable = sqliteTable('files', {
+    fileId: integer('file_id').primaryKey(),
+    fileName: text('file_name'), //поле для пошуку
+    fileUrl: text('file_url'), //поле для відображення файлу за посиланням
+    fileType: integer("file_type"),
+
+});
+
+export const kachurTeamTable = sqliteTable('kachur_team', {
+    kachurId: integer('kachur_id').primaryKey(),
+    memberId: integer('member_id', { mode: 'number' }).references(() => memberTable.memberId),
+    positionId: integer('position_id'),
+    type: integer('type'),
+});
 

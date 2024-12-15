@@ -22,7 +22,11 @@ interface VideoProgress {
     isWatched: boolean;
 }
 
-const Player = () => {
+interface PlayerProps {
+    videoUrl?: string; // Пряме посилання на відео
+}
+
+const Player: React.FC<PlayerProps> = ({ videoUrl }) => {
     const {
         currentVideo,
         playNextEpisode,
@@ -32,6 +36,7 @@ const Player = () => {
         watchId,
     } = usePlayer();
 
+    const videoSrc = videoUrl || currentVideo;
     const [isFirefox, setIsFirefox] = useState(false);
 
     const [volumeSliderValue, setVolumeValue] = useState([0]);
@@ -297,6 +302,7 @@ const Player = () => {
         const handleKeyDown = (event: KeyboardEvent) => {
             const tagName = document?.activeElement?.tagName?.toLowerCase();
             if (tagName === "textarea") return;
+            if (tagName === "input") return;
 
             switch (event.key.toLowerCase()) {
                 case " ":
@@ -466,12 +472,14 @@ const Player = () => {
                         <Image width={60} height={35} src="/duck.svg" alt="" className="DuckBtn"/>
                     </Button>
 
-                    <div className="flex align-items-center px-1">
-                        <Switch
-                            className="AutoPlayNextBtn"
-                            checked={autoplayEnabled} onCheckedChange={toggleAutoplay}
-                        />
-                    </div>
+                    {videoUrl === undefined && (
+                        <div className="flex align-items-center px-1">
+                            <Switch
+                                className="AutoPlayNextBtn"
+                                checked={autoplayEnabled} onCheckedChange={toggleAutoplay}
+                            />
+                        </div>
+                    )}
 
                     {/* Якщо браузер НЕ фаєрфокс відображаємо кнопку для picture-in-picture */}
                     {!isFirefox && (
@@ -481,10 +489,11 @@ const Player = () => {
                         </Button>
                     )}
 
-                    <Button variant="link" size="icon" className="smallerBtn">
+                    {videoUrl === undefined && (
+                        <Button variant="link" size="icon" className="smallerBtn">
                         <RiSettings5Fill className="RiSettings5Fill"/>
                     </Button>
-
+                    )}
                     <Button variant="link" size="icon" onClick={() => toggleFullScreen()} className="smallerBtn">
                         <RiFullscreenFill className="RiFullscreenFill"/>
                         <RiFullscreenExitFill className="RiFullscreenExitFill"/>
@@ -493,7 +502,7 @@ const Player = () => {
             </div>
 
             {/* Ваша логіка для відтворення відео */}
-            <video ref={videoRef} src={currentVideo} autoPlay={false} className="media_player w-full"
+            <video ref={videoRef} src={videoSrc} autoPlay={false} className="media_player w-full"
                    onClick={() => togglePlay()} onVolumeChange={volumeChange} onTimeUpdate={() => {
                 if (timelineContainerRef.current && videoRef.current) {
                     const percent = videoRef.current.currentTime / videoRef.current.duration;

@@ -7,7 +7,7 @@ import { Search, SlidersHorizontal } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import HeadTitle from "@/components/main/head-title";
 import React, { useState } from "react";
-import PopAnimeComponent from "@/app/(main)/(routes)/watch/[watchId]/pop-anime-component";
+import PopAnimeComponent from "@/components/main/pop-anime-component";
 
 
 export default function Home() {
@@ -17,6 +17,7 @@ export default function Home() {
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(event.target.value);
     };
+
     return (
         <div>
             <div className="hero h-full w-full overflow-hidden flex">
@@ -43,11 +44,10 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div className="mx-auto max-w-screen-xl py-10">
+                <div className="mx-auto max-w-screen-xl py-4 box-content" id="target-element">
                     <PopAnimeComponent searchQuery={searchQuery}/>
-                  </div>
-
-              </div>
+                </div>
+            </div>
           </div>
   );
 }

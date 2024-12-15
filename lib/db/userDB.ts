@@ -20,7 +20,7 @@ import {
     characterTable,
     directorTable,
     episodeTable,
-    genreTable,
+    genreTable, kachurTeamTable,
     memberTable, roleTable,
     userTable
 } from "@/lib/db/schema";
@@ -160,6 +160,8 @@ export async function getAllAnimeData(searchAnimeId: number): Promise<AnimeData>
 
             existedEpisodes: db.$count(animeEpisodeTable, eq(animeEpisodeTable.animeId, animeTable.animeId)),
 
+            monobankRef: animeTable.monobankRef,
+
         }).from(animeTable).where(eq(animeTable.animeId, searchAnimeId))
             .leftJoin(animeStatusTable, eq(animeStatusTable.statusId, animeTable.statusId))
             .leftJoin(animeTypeTable, eq(animeTypeTable.typeId, animeTable.typeId))
@@ -279,6 +281,8 @@ export async function getCharactersByActorId(searchUserId: number, searchFromAni
         popularityId: animePopularityTable.popularityId,
         characterId: characterTable.characterId,
         voiceActorId: characterTable.voiceActorId,
+        animeName: animeTable.nameUkr,
+
     }).from(characterTable)
         .where(eq(characterTable.voiceActorId, searchUserId))
         .leftJoin(animeTable, eq(animeTable.animeId, characterTable.animeId))
@@ -298,9 +302,12 @@ export async function getArtByUser(searchUserId: number) {
 }
 
 
-export async function getPopularAnimeBySearch(searchQuery: string) {
+export async function getPopularAnimeBySearch(
+    searchQuery: string,
+    limit: number = 9,
+    offset: number = 0
+) {
     return db.select({
-
         animeId: animeTable.animeId,
         nameUkr: animeTable.nameUkr,
         episodesExpected: animeTable.episodesExpected,
@@ -310,7 +317,6 @@ export async function getPopularAnimeBySearch(searchQuery: string) {
         statusId: animeTable.statusId,
 
         existedEpisodes: db.$count(animeEpisodeTable, eq(animeEpisodeTable.animeId, animeTable.animeId)),
-
     })
         .from(animeTable)
         .leftJoin(animeStatusTable, eq(animeStatusTable.statusId, animeTable.statusId))
@@ -320,12 +326,13 @@ export async function getPopularAnimeBySearch(searchQuery: string) {
                 (like(animeTable.nameUkr, `%${searchQuery}%`)),
                 (like(animeTable.nameEng, `%${searchQuery}%`))
             )
-        ) // Додаємо фільтрацію по назві аніме
+        )
         .orderBy(
             animePopularityTable.order,
             animeTable.statusId,
         )
-        .limit(9);
+        .limit(limit)
+        .offset(offset);
 }
 
 
@@ -505,4 +512,82 @@ export async function deleteComment(commentId: number) {
 
     return {success: true, message: 'Успіх!'};
 
+}
+
+
+export async function getDubberPage(searchUser: number) {
+    return db.select({
+        memberNickname: userTable.nickname,
+        memberName: userTable.name,
+        memberId: memberTable.memberId,
+        userId: userTable.userId,
+        art: userTable.art,
+    }).from(memberTable)
+        .where(eq(memberTable.userId, searchUser))
+        .leftJoin(userTable, eq(userTable.userId, memberTable.userId));
+}
+
+
+type ProfileType = {
+    userId: number;
+    nickname: string;
+    art: string | null;
+};
+
+export async function getKachurTeam() {
+    const results = await db
+        .select({
+            type: kachurTeamTable.type,
+            positionId: kachurTeamTable.positionId,
+            userId: userTable.userId,
+            nickname: userTable.nickname,
+            art: userTable.art,
+        })
+        .from(kachurTeamTable)
+        .leftJoin(memberTable, eq(kachurTeamTable.memberId, memberTable.memberId))
+        .leftJoin(userTable, eq(memberTable.userId, userTable.userId));
+
+    // Групуємо результати за type
+    type GroupedItem = {
+        profile: ProfileType;
+        positionId: number;
+    };
+
+    const grouped: Record<number, GroupedItem[]> = {};
+
+
+    results.forEach((row) => {
+        const { type, positionId, userId, nickname, art } = row;
+
+
+        if (type === null || userId === null || nickname === null || positionId === null) {
+            // Ігноруємо записи без типу
+            return;
+        }
+
+
+        if (!grouped[type]) {
+            grouped[type] = [];
+        }
+
+        grouped[type].push({
+            profile: { userId, nickname, art },
+            positionId,
+        });
+
+    });
+
+    console.log(grouped);
+
+    // Сортуємо та перетворюємо на остаточну структуру
+    const sortedGrouped: Record<number, ProfileType[]> = {};
+
+    for (const type in grouped) {
+        const numericType = Number(type); // Приводимо ключ до числа
+        sortedGrouped[numericType] = grouped[type]
+            .sort((a, b) => a.positionId - b.positionId) // Сортуємо за positionId
+            .map((item) => item.profile); // Повертаємо лише profile
+    }
+
+    return sortedGrouped;
 }
