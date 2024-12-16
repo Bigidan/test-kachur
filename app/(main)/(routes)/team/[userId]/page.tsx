@@ -5,6 +5,17 @@ import React, { useEffect, useState } from "react";
 import {notFound, useParams} from "next/navigation";
 import {getCharactersByActorId, getKachurTeamById} from "@/lib/db/userDB";
 import Link from "next/link";
+import Image from "next/image";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent, DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/dialog";
+import {Textarea} from "@/components/ui/textarea";
 
 interface DubberData {
     kachurTeamTable: {
@@ -18,6 +29,7 @@ interface DubberData {
         youtube: string | null;
         telegram: string | null;
         twitch: string | null;
+        instagram: string | null;
         status: string | null;
         social: string | null;
         pet: string | null;
@@ -111,15 +123,42 @@ export default function TeamUserId() {
     return (
         <div className="flex flex-wrap justify-center gap-4 w-full">
             <div className="flex flex-col gap-1.5">
-                <Button size="iconBig">
 
-                </Button>
-                <Button size="iconBig">
-
-                </Button>
-                <Button size="iconBig">
-
-                </Button>
+                {dubberData.kachurTeamTable.tiktok && (
+                    <Button size="iconBig">
+                        <a href={dubberData.kachurTeamTable.tiktok}>
+                            <Image src="/tiktok_btn.png" alt="tiktok" width={50} height={50}/>
+                        </a>
+                    </Button>
+                )}
+                {dubberData.kachurTeamTable.youtube && (
+                    <Button size="iconBig">
+                        <a href={dubberData.kachurTeamTable.youtube}>
+                            <Image src="/youtube_btn.png" alt="youtube" width={50} height={50}/>
+                        </a>
+                    </Button>
+                )}
+                {dubberData.kachurTeamTable.telegram && (
+                    <Button size="iconBig">
+                        <a href={dubberData.kachurTeamTable.telegram}>
+                            <Image src="/telegram_btn.png" alt="telegram    " width={50} height={50}/>
+                        </a>
+                    </Button>
+                )}
+                {dubberData.kachurTeamTable.twitch && (
+                    <Button size="iconBig">
+                        <a href={dubberData.kachurTeamTable.twitch}>
+                            <Image src="/twitch_btn.png" alt="twitch" width={50} height={50}/>
+                        </a>
+                    </Button>
+                )}
+                {dubberData.kachurTeamTable.instagram && (
+                    <Button size="iconBig">
+                        <a href={dubberData.kachurTeamTable.instagram}>
+                            <Image src="/instagram_btn.png" alt="instagram" width={50} height={50}/>
+                        </a>
+                    </Button>
+                )}
             </div>
 
             <div className="flex flex-col gap-6 flex-shrink-[0]">
@@ -128,7 +167,65 @@ export default function TeamUserId() {
                          className="w-full h-full object-cover border-2 border-white rounded-md"/>
                 </div>
                 <div>
-                    {dubberData.memberNickname}
+
+                    <div className="grid grid-rows-4 w-full overflow-hidden rounded-lg">
+                        <div className="bg-gradient-to-b from-[#9F0101] to-[#3F0000]">
+                            <div className="grid grid-cols-4 gap-4 items-center justify-items-center h-full">
+                                <div></div>
+                                <div className="col-span-2 uppercase font-bold text-xl pb-1">{dubberData.memberNickname}</div>
+                                <div className="max-w-[41px] relative pb-2">
+                                    <img src={dubberData.art || ""} alt="Арт"
+                                         className="w-full h-full object-cover border-2 border-white rounded-full"/>
+                                    <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 bg-[#5CE31D] rounded-full">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="row-span-2 grid grid-rows-3 bg-white items-center">
+                            <div
+                                className="row-start-2 bg-[#4E8CFF] rounded-lg w-fit flex justify-center items-center h-fit p-2 ml-3 -mb-1">Як справи?</div>
+                            <div className="row-start-3 bg-[#4E8CFF] rounded-lg w-fit flex justify-center items-center h-fit p-2 ml-3 mb-2">Чекаємо Ваші питання тут</div>
+                        </div>
+                        <div className="p-4 bg-[#454545]">
+                            <div className="w-full h-full bg-black rounded-full">
+
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button className="font-semibold text-[12px] bg-transparent border-transparent rounded-full outline-none hover:bg-white/10 w-full h-full text-gray-500"><div className="w-full text-left">Надіслати повідомлення...</div></Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-[800px]">
+                                        <DialogHeader>
+                                            <DialogTitle className="text-white/80">Кому: <span className="bg-gradient-to-b from-[#D50000] to-[#6F0000] text-transparent bg-clip-text pl-2">Студія Качур</span></DialogTitle>
+                                            <DialogDescription className="text-[16px]">
+                                                Від: <span className="bg-gradient-to-b from-[#D50000] to-[#6F0000] text-transparent bg-clip-text pl-2">a</span>
+                                            </DialogDescription>
+                                        </DialogHeader>
+
+
+                                        <div className="w-full flex">
+                                            <Textarea
+                                            placeholder="Ваше повідомлення..."
+                                            className="bg-[#F0F0F0] text-background min-h-72
+                                            border-transparentoutline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                                            />
+                                        </div>
+
+                                        <DialogFooter className="sm:justify-start self-end">
+                                            <DialogClose asChild>
+                                                <div className="flex w-full justify-between">
+                                                <Button variant="secondary" className="self-end">
+                                                    Скасувати
+                                                </Button>
+                                                    <Button variant="kachurGrad" className="self-end uppercase font-bold">НАДІСЛАТИ</Button>
+                                                </div>
+                                            </DialogClose>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -152,8 +249,8 @@ export default function TeamUserId() {
                             className="bg-gradient-to-b from-[#B90000] to-[#730000] font-extrabold rounded-md h-auto flex justify-center items-center self-center px-2 py-1.5 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]">
                             <div>{dubberData.memberNickname?.toUpperCase()}’S PLAYLIST</div>
                         </div>
-                        <div className="p-6">
-                            1
+                        <div className="p-6 grid-cols-2">
+
                         </div>
                     </div>
                 </div>

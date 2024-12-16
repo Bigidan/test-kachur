@@ -17,6 +17,7 @@ import {User as UserType} from "@/components/types/user";
 
 import CommentsSection from "@/components/watch/comment-sectio"
 import NotFoundK from "@/app/(main)/not-found";
+import {AnimeFavoriteButton} from "@/components/watch/anime-favorite-button";
 
 
 export default async function WatchPage({
@@ -31,7 +32,7 @@ export default async function WatchPage({
     const watchId = (await params).watchId;
     if (isNaN(Number(watchId))) return <NotFoundK/>;
 
-    const animeData: AnimeData = await getAllAnimeData(Number(watchId));
+    const animeData: AnimeData = await getAllAnimeData(Number(watchId), user.userId);
     const {
         anime: animeDataEx,
         genres: animeGenres,
@@ -128,10 +129,8 @@ export default async function WatchPage({
                                 </span>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Button size="kachurGrad" className="gap-4">
-                                    <Image src="/bookmark.svg" alt="" width={32} height={32}/>
-                                    <span className="uppercase font-bold">ДОДАТИ В ОБРАНЕ</span>
-                                </Button>
+
+                                <AnimeFavoriteButton animeId={Number(watchId)} userId={user.userId} isFavorite={!!animeDataEx[0].isFavorite}/>
 
 
                                 <Button variant="kachurGrad" size="kachurGrad">

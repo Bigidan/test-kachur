@@ -57,6 +57,7 @@ export const animeTable = sqliteTable('anime', {
     animePopularityId: integer('anime_popularity_id', { mode: 'number' }).references(() => animePopularityTable.popularityId),
     ducks: integer('ducks', { mode: 'number' }),
     monobankRef: text('monobank_ref'),
+    isHidden: integer('is_hidden', { mode: 'boolean' }),
 });
 
 
@@ -206,6 +207,7 @@ export const kachurTeamTable = sqliteTable('kachur_team', {
     youtube: text('youtube'),
     telegram: text('telegram'),
     twitch: text('twitch'),
+    instagram: text('instagram'),
     status: text('status'),
     date: text('date'),
     social: text('social'),
@@ -219,3 +221,9 @@ export const playlistTable = sqliteTable('playlists', {
     musicId: integer('music_id').references(() => musicTable.musicId),
     kachurId: integer('music_id').references(() => kachurTeamTable.kachurId),
 });
+
+
+export const animeFavorite = sqliteTable('anime_favorite', {
+    animeId: integer('anime_id').references(() => animeTable.animeId),
+    userId: integer('user_id').references(() => userTable.userId),
+})

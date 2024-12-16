@@ -111,7 +111,7 @@ const LoginPage = () => {
             await login(user);
             showToast("Ви успішно увійшли!", `Вітаємо, ${user.nickname}!`,
                 "Гаразд", false, "/");
-            router.push("/");
+            window.location.href = '/';
         }
 
 

@@ -3,12 +3,11 @@
 import { LogOut } from 'lucide-react'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { logout } from "@/lib/auth/session";
-import {redirect} from "next/navigation";
 
 const LogOutButton = () => {
     const handleLogOut = async () => {
         await logout();
-        redirect("/login");
+        window.location.href = '/login';
     }
 
     return (

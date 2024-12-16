@@ -98,7 +98,7 @@ const RegisterPage = () => {
                 await userRegister(values);
                 showToast("Ви успішно зареєструвалися!", `${ new Date().toLocaleDateString('uk-UA') }`,
                     "Гаразд", false, '/');
-                router.push('/')
+                window.location.href = '/';
             }
         }
     }

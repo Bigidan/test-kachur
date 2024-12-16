@@ -203,6 +203,7 @@ export default function AnimePage() {
                 formData.headerImage || "",
                 formData.shortDescription || "",
                 formData.monobankRef || "",
+                formData.isHidden || false,
             );
 
             await fetchAnimes();
@@ -237,6 +238,7 @@ export default function AnimePage() {
                 formData.headerImage || "",
                 formData.shortDescription || "",
                 formData.monobankRef || "",
+                formData.isHidden || false,
             );
 
             await fetchAnimes();
@@ -309,6 +311,8 @@ export default function AnimePage() {
             description: anime.description,
             trailerLink: anime.trailerLink,
             headerImage: anime.headerImage,
+            monobankRef: anime.monobankRef,
+            isHidden: anime.isHidden,
         });
 
         const selectedType = animeTypes.find(type => type.id === anime.typeId);
@@ -959,6 +963,7 @@ export default function AnimePage() {
                                         className="col-span-3"
                                     />
                                 </div>
+
                                 <div>
                                     <Label htmlFor="headerImage" className="text-right">
                                         Зображення
@@ -967,6 +972,36 @@ export default function AnimePage() {
                                         id="headerImage"
                                         value={formData.headerImage || ""}
                                         onChange={(e) => setFormData({...formData, headerImage: e.target.value})}
+                                        className="col-span-3"
+                                    />
+                                </div>
+                                <div>
+                                    <Label className="text-right">Файл Зображення</Label>
+                                    <PhotoUpload onFileUpload={handleFileUpload}
+                                                 fileName={formData.nameUkr || "" + formData.nameEng}/>
+                                    {formData.headerImage && (
+                                        <>
+                                            <Label className="text-right">Завантажений файл:</Label>
+                                            <img
+                                                src={formData.headerImage}
+                                                alt="Завантажений файл"
+                                                height={50}
+                                                width={50}
+                                            />
+                                        </>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="isHidden" className="text-right">
+                                        Приховано?
+                                    </Label>
+                                    <Checkbox
+                                        id="isHidden"
+                                        checked={formData.isHidden || true}
+                                        onCheckedChange={(checked) =>
+                                            setFormData({...formData, isHidden: checked as boolean})
+                                        }
                                         className="col-span-3"
                                     />
                                 </div>
@@ -1475,6 +1510,19 @@ export default function AnimePage() {
                                 id="monobankRef"
                                 value={formData.monobankRef || ""}
                                 onChange={(e) => setFormData({...formData, monobankRef: e.target.value})}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="isHidden" className="text-right">
+                                Приховано?
+                            </Label>
+                            <Checkbox
+                                id="isHidden"
+                                checked={formData.isHidden || false}
+                                onCheckedChange={(checked) =>
+                                    setFormData({...formData, isHidden: checked as boolean})
+                                }
                                 className="col-span-3"
                             />
                         </div>

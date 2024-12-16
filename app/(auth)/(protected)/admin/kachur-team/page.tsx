@@ -40,6 +40,7 @@ import {
 import { Check, ChevronsUpDown } from "lucide-react";
 import {addKachurTeamMember, deleteKachurTeamMember, getTeam, updateKachurTeamMember} from "@/lib/db/admin";
 import { getAllKachurTeam } from "@/lib/db/admin";
+import {Textarea} from "@/components/ui/textarea";
 
 // Типи для даних
 type KachurTeam = {
@@ -51,6 +52,7 @@ type KachurTeam = {
     youtube: string | null;
     telegram: string | null;
     twitch: string | null;
+    instagram: string | null;
     status: string | null;
     date: string | null;
     social: string | null;
@@ -88,6 +90,7 @@ export default function KachurTeamPage() {
     const [youtube, setYoutube] = useState<string>('');
     const [telegram, setTelegram] = useState<string>('');
     const [twitch, setTwitch] = useState<string>('');
+    const [instagram, setInstagram] = useState<string>('');
     const [status, setStatus] = useState<string>('');
     const [date, setDate] = useState<string>('');
     const [social, setSocial] = useState<string>('');
@@ -134,6 +137,7 @@ export default function KachurTeamPage() {
                         youtube,
                         telegram,
                         twitch,
+                        instagram,
                         status,
                         date,
                         social,
@@ -167,6 +171,7 @@ export default function KachurTeamPage() {
                         youtube,
                         telegram,
                         twitch,
+                        instagram,
                         status,
                         date,
                         social,
@@ -290,6 +295,7 @@ export default function KachurTeamPage() {
                                     setYoutube(teamMember.youtube || '');
                                     setTelegram(teamMember.telegram || '');
                                     setTwitch(teamMember.twitch || '');
+                                    setTwitch(teamMember.instagram || '');
                                     setStatus(teamMember.status || '');
                                     setDate(teamMember.date || '');
                                     setSocial(teamMember.social || '');
@@ -342,12 +348,12 @@ export default function KachurTeamPage() {
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" role="combobox" className="w-full justify-between">
                                             {selectedMember ? selectedMember[0].nickname : "Виберіть члена команди"}
-                                            <ChevronsUpDown className="ml-2 h-4 w-4" />
+                                            <ChevronsUpDown className="ml-2 h-4 w-4"/>
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent>
                                         <Command>
-                                            <CommandInput placeholder="Пошук члена команди..." />
+                                            <CommandInput placeholder="Пошук члена команди..."/>
                                             <CommandList>
                                                 <CommandEmpty>Членів команди не знайдено.</CommandEmpty>
                                                 <CommandGroup>
@@ -357,7 +363,7 @@ export default function KachurTeamPage() {
                                                             onSelect={() => setSelectedMember(member ? [member] : null)}
                                                         >
                                                             <Check
-                                                                className={selectedMember ? (selectedMember[0].memberId === member.memberId ? "opacity-100" : "opacity-0") : "opacity-0"} />
+                                                                className={selectedMember ? (selectedMember[0].memberId === member.memberId ? "opacity-100" : "opacity-0") : "opacity-0"}/>
                                                             {member.nickname}
                                                         </CommandItem>
                                                     ))}
@@ -374,7 +380,7 @@ export default function KachurTeamPage() {
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" role="combobox" className="w-full justify-between">
                                             {selectedType !== null ? typeLabels[selectedType as keyof typeof typeLabels] : "Виберіть тип"}
-                                            <ChevronsUpDown className="ml-2 h-4 w-4" />
+                                            <ChevronsUpDown className="ml-2 h-4 w-4"/>
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent>
@@ -387,7 +393,7 @@ export default function KachurTeamPage() {
                                                             onSelect={() => setSelectedType(Number(key))}
                                                         >
                                                             <Check
-                                                                className={selectedType === Number(key) ? "opacity-100" : "opacity-0"} />
+                                                                className={selectedType === Number(key) ? "opacity-100" : "opacity-0"}/>
                                                             {label}
                                                         </CommandItem>
                                                     ))}
@@ -442,6 +448,14 @@ export default function KachurTeamPage() {
                                     placeholder="Twitch канал"
                                 />
                             </div>
+                            <div>
+                                <Label>Instagram</Label>
+                                <Input
+                                    value={instagram}
+                                    onChange={(e) => setInstagram(e.target.value)}
+                                    placeholder="Twitch канал"
+                                />
+                            </div>
 
                             {/* Додаткові інформаційні поля */}
                             <div>
@@ -480,7 +494,7 @@ export default function KachurTeamPage() {
                             </div>
                             <div>
                                 <Label>Улюблене аніме</Label>
-                                <Input
+                                <Textarea
                                     value={anime}
                                     onChange={(e) => setAnime(e.target.value)}
                                     placeholder="Улюблене аніме"
@@ -488,7 +502,7 @@ export default function KachurTeamPage() {
                             </div>
                             <div>
                                 <Label>Улюблені фільми</Label>
-                                <Input
+                                <Textarea
                                     value={films}
                                     onChange={(e) => setFilms(e.target.value)}
                                     placeholder="Улюблені фільми"
@@ -496,16 +510,16 @@ export default function KachurTeamPage() {
                             </div>
                             <div>
                                 <Label>Улюблені ігри</Label>
-                                <Input
+                                <Textarea
                                     value={games}
                                     onChange={(e) => setGames(e.target.value)}
                                     placeholder="Улюблені ігри"
                                 />
                             </div>
                         </div>
-                            <DialogFooter>
-                                <Button type="button" onClick={handleAddTeamMember}>Додати</Button>
-                            </DialogFooter>
+                        <DialogFooter>
+                            <Button type="button" onClick={handleAddTeamMember}>Додати</Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
 
@@ -526,12 +540,12 @@ export default function KachurTeamPage() {
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" role="combobox" className="w-full justify-between">
                                             {selectedMember ? selectedMember[0].nickname : "Виберіть члена команди"}
-                                            <ChevronsUpDown className="ml-2 h-4 w-4" />
+                                            <ChevronsUpDown className="ml-2 h-4 w-4"/>
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent>
                                         <Command>
-                                            <CommandInput placeholder="Пошук члена команди..." />
+                                            <CommandInput placeholder="Пошук члена команди..."/>
                                             <CommandList>
                                                 <CommandEmpty>Членів команди не знайдено.</CommandEmpty>
                                                 <CommandGroup>
@@ -541,7 +555,7 @@ export default function KachurTeamPage() {
                                                             onSelect={() => setSelectedMember(member ? [member] : null)}
                                                         >
                                                             <Check
-                                                                className={selectedMember ? (selectedMember[0].memberId === member.memberId ? "opacity-100" : "opacity-0") : "opacity-0"} />
+                                                                className={selectedMember ? (selectedMember[0].memberId === member.memberId ? "opacity-100" : "opacity-0") : "opacity-0"}/>
                                                             {member.nickname}
                                                         </CommandItem>
                                                     ))}
@@ -559,7 +573,7 @@ export default function KachurTeamPage() {
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" role="combobox" className="w-full justify-between">
                                             {selectedType !== null ? typeLabels[selectedType as keyof typeof typeLabels] : "Виберіть тип"}
-                                            <ChevronsUpDown className="ml-2 h-4 w-4" />
+                                            <ChevronsUpDown className="ml-2 h-4 w-4"/>
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent>
@@ -572,7 +586,7 @@ export default function KachurTeamPage() {
                                                             onSelect={() => setSelectedType(Number(key))}
                                                         >
                                                             <Check
-                                                                className={selectedType === Number(key) ? "opacity-100" : "opacity-0"} />
+                                                                className={selectedType === Number(key) ? "opacity-100" : "opacity-0"}/>
                                                             {label}
                                                         </CommandItem>
                                                     ))}
@@ -627,6 +641,14 @@ export default function KachurTeamPage() {
                                     placeholder="Twitch канал"
                                 />
                             </div>
+                            <div>
+                                <Label>Instagram</Label>
+                                <Input
+                                    value={instagram}
+                                    onChange={(e) => setInstagram(e.target.value)}
+                                    placeholder="Twitch канал"
+                                />
+                            </div>
 
                             {/* Додаткові інформаційні поля */}
                             <div>
@@ -665,7 +687,7 @@ export default function KachurTeamPage() {
                             </div>
                             <div>
                                 <Label>Улюблене аніме</Label>
-                                <Input
+                                <Textarea
                                     value={anime}
                                     onChange={(e) => setAnime(e.target.value)}
                                     placeholder="Улюблене аніме"
@@ -673,7 +695,7 @@ export default function KachurTeamPage() {
                             </div>
                             <div>
                                 <Label>Улюблені фільми</Label>
-                                <Input
+                                <Textarea
                                     value={films}
                                     onChange={(e) => setFilms(e.target.value)}
                                     placeholder="Улюблені фільми"
@@ -681,7 +703,7 @@ export default function KachurTeamPage() {
                             </div>
                             <div>
                                 <Label>Улюблені ігри</Label>
-                                <Input
+                                <Textarea
                                     value={games}
                                     onChange={(e) => setGames(e.target.value)}
                                     placeholder="Улюблені ігри"
@@ -701,5 +723,5 @@ export default function KachurTeamPage() {
                 data={team}
             />
         </div>
-);
+    );
 }

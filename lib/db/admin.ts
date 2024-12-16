@@ -433,6 +433,7 @@ export async function getAllAnime(): Promise<Anime[]> {
         shortDescription: animeTable.shortDescription,
         popularity: animeTable.animePopularityId,
         monobankRef: animeTable.monobankRef,
+        isHidden: animeTable.isHidden,
 
     }).from(animeTable).leftJoin(animeStatusTable, eq(animeTable.statusId, animeStatusTable.statusId));
 }
@@ -458,6 +459,7 @@ export async function updateAnime(
     headerImage: string,
     shortDescription: string,
     monobankRef: string,
+    isHidden: boolean,
 ): Promise<void> {
     await db.update(animeTable)
         .set({
@@ -479,6 +481,7 @@ export async function updateAnime(
             shortDescription,
             animePopularityId,
             monobankRef,
+            isHidden,
         })
         .where(eq(animeTable.animeId, animeId));
 }
@@ -508,6 +511,7 @@ export async function addAnime(
     headerImage: string,
     shortDescription: string,
     monobankRef: string,
+    isHidden: boolean,
 ): Promise<void> {
     await db.insert(animeTable).values({
         typeId: typeId,
@@ -528,6 +532,7 @@ export async function addAnime(
         shortDescription: shortDescription,
         animePopularityId: animePopularityId,
         monobankRef: monobankRef,
+        isHidden: isHidden,
     })
 }
 
@@ -909,6 +914,7 @@ export async function getAllAnimeData() {
             shortDescription: animeTable.shortDescription,
             popularity: animeTable.animePopularityId,
             monobankRef: animeTable.monobankRef,
+            isHidden: animeTable.isHidden,
 
         }).from(animeTable).leftJoin(animeStatusTable, eq(animeTable.statusId, animeStatusTable.statusId)),
 
@@ -990,6 +996,7 @@ type KachurTeam = {
     youtube: string | null;
     telegram: string | null;
     twitch: string | null;
+    instagram: string | null;
     status: string | null;
     date: string | null;
     social: string | null;
@@ -1040,6 +1047,7 @@ export async function updateKachurTeamMember(
             youtube: additionalData.youtube || null,
             telegram: additionalData.telegram || null,
             twitch: additionalData.twitch || null,
+            instagram: additionalData.instagram || null,
             status: additionalData.status || null,
             date: additionalData.date || null,
             social: additionalData.social || null,

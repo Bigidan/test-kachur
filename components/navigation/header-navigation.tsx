@@ -63,7 +63,7 @@ export function HeaderNavigation() {
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href="/contacts" legacyBehavior passHref>
+                    <Link href="#contacts" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                             Контакти
                         </NavigationMenuLink>

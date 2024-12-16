@@ -35,17 +35,25 @@ import PopAnimeComponent from "@/components/main/pop-anime-component";
 const MainHeaderBar = () => {
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [user, setUser] = useState<UserType>();
+    const [user, setUser] = useState<UserType | null>(null); // null для "користувача ще не завантажено"
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const fetchUser = async () => {
-        const parsed = await getSession();
-        setUser(parsed?.user as UserType);
-    }
+        setIsLoading(true); // Встановлюємо стан завантаження
+        try {
+            const parsed = await getSession();
+            setUser(parsed?.user as UserType);
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            setUser(null); // У разі помилки вважаємо, що користувача немає
+        } finally {
+            setIsLoading(false); // Завершуємо завантаження
+        }
+    };
 
     useEffect(() => {
         fetchUser();
     }, []);
-
 
 
     return (
@@ -70,6 +78,9 @@ const MainHeaderBar = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-[1200px] max-h-[714px] p-4">
                             <div className="flex mb-4">
+                                <div className="flex items-center justify-center">
+                                    <Search/>
+                                </div>
                                 <Input placeholder="Пошук"
                                        value={searchQuery}
                                        onChange={(e) => setSearchQuery(e.target.value)}
@@ -85,7 +96,11 @@ const MainHeaderBar = () => {
                     </DropdownMenu>
 
                     <div className="mx-12">
-                        {user != undefined ? (
+                        {isLoading ? (
+                            <Avatar>
+                                <AvatarFallback><User/></AvatarFallback>
+                            </Avatar>
+                        ) : user ? (
                         <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="link" size="icon">
@@ -98,7 +113,7 @@ const MainHeaderBar = () => {
 
 
                         <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel className="text-center">Я та моя сім&#39;я</DropdownMenuLabel>
+                            <DropdownMenuLabel className="text-center">{user.nickname || "Гість"}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuGroup>
                                 <DropdownMenuItem asChild>

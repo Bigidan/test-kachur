@@ -5,7 +5,7 @@ import {
     animeAgeTable, animeCommentsTable,
     animeDubDirectorTable,
     animeEditingTable,
-    animeEpisodeTable,
+    animeEpisodeTable, animeFavorite,
     animeGenreTable, animePopularityTable,
     animeSoundTable,
     animeSourceTable,
@@ -24,7 +24,7 @@ import {
     memberTable, roleTable,
     userTable
 } from "@/lib/db/schema";
-import {and, desc, eq, isNotNull, isNull, like, or, sql} from "drizzle-orm";
+import {and, desc, eq, isNotNull, isNull, like, ne, or, sql} from "drizzle-orm";
 import {hashPassword, verifyPassword} from "@/lib/auth/jwt";
 import {AnimeData, CommentsType} from "@/components/types/anime-types";
 import {User as UserType, User} from "@/components/types/user";
@@ -110,7 +110,7 @@ export async function getUserByEmail(email: string): Promise<
 }
 
 
-export async function getAllAnimeData(searchAnimeId: number): Promise<AnimeData> {
+export async function getAllAnimeData(searchAnimeId: number, user: number | null): Promise<AnimeData> {
     const [anime,
 
         genres,
@@ -159,8 +159,9 @@ export async function getAllAnimeData(searchAnimeId: number): Promise<AnimeData>
             headerImage: animeTable.headerImage,
 
             existedEpisodes: db.$count(animeEpisodeTable, eq(animeEpisodeTable.animeId, animeTable.animeId)),
-
             monobankRef: animeTable.monobankRef,
+
+            isFavorite: animeFavorite.animeId,
 
         }).from(animeTable).where(eq(animeTable.animeId, searchAnimeId))
             .leftJoin(animeStatusTable, eq(animeStatusTable.statusId, animeTable.statusId))
@@ -168,7 +169,13 @@ export async function getAllAnimeData(searchAnimeId: number): Promise<AnimeData>
             .leftJoin(animeSourceTable, eq(animeSourceTable.sourceId, animeTable.sourceId))
             .leftJoin(animeAgeTable, eq(animeAgeTable.ageId, animeTable.ageId))
             .leftJoin(animeStudioTable, eq(animeStudioTable.studioId, animeTable.studioId))
-            .leftJoin(directorTable, eq(directorTable.directorId, animeTable.directorId)),
+            .leftJoin(directorTable, eq(directorTable.directorId, animeTable.directorId))
+            .leftJoin(animeFavorite,
+                and(
+                    eq(animeFavorite.animeId, animeTable.animeId),
+                    eq(animeFavorite.userId, user || 0),
+                )
+            ),
 
         db.select({
             genreId: genreTable.genreId,
@@ -322,9 +329,12 @@ export async function getPopularAnimeBySearch(
         .leftJoin(animeStatusTable, eq(animeStatusTable.statusId, animeTable.statusId))
         .leftJoin(animePopularityTable, eq(animePopularityTable.popularityId, animeTable.animePopularityId))
         .where(
-            or(
-                (like(animeTable.nameUkr, `%${searchQuery}%`)),
-                (like(animeTable.nameEng, `%${searchQuery}%`))
+            and(
+                or(
+                    (like(animeTable.nameUkr, `%${searchQuery}%`)),
+                    (like(animeTable.nameEng, `%${searchQuery}%`))
+                ),
+                ne(animeTable.isHidden, true)
             )
         )
         .orderBy(
@@ -605,4 +615,32 @@ export async function getKachurTeamById(kachurId: number) {
         .where(eq(kachurTeamTable.kachurId, kachurId))
         .leftJoin(memberTable, eq(memberTable.memberId, kachurTeamTable.memberId))
         .leftJoin(userTable, eq(userTable.userId, memberTable.userId));
+}
+
+export async function toggleFavorite(animeId: number, userId: number) {
+    // Перевіряємо, чи вже існує запис у таблиці
+    const existingFavorite = await db.select().from(animeFavorite).where(
+        and(
+            eq(animeFavorite.animeId, animeId),
+            eq(animeFavorite.userId, userId),
+        )
+    );
+
+    if (existingFavorite.length > 0) {
+        // Якщо запис існує, видаляємо його (видаляємо з обраного)
+        await db.delete(animeFavorite).where(
+            and(
+                eq(animeFavorite.animeId, animeId),
+                eq(animeFavorite.userId, userId),
+            )
+        );
+        return { success: true, favorite: false };
+    } else {
+        // Якщо запису немає, додаємо новий
+        await db.insert(animeFavorite).values({
+            animeId,
+            userId,
+        });
+        return { success: true, favorite: true };
+    }
 }
