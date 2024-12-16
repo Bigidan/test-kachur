@@ -539,7 +539,7 @@ export async function getKachurTeam() {
         .select({
             type: kachurTeamTable.type,
             positionId: kachurTeamTable.positionId,
-            userId: userTable.userId,
+            userId: kachurTeamTable.kachurId,
             nickname: userTable.nickname,
             art: userTable.art,
         })
@@ -590,4 +590,19 @@ export async function getKachurTeam() {
     }
 
     return sortedGrouped;
+}
+
+
+export async function getKachurTeamById(kachurId: number) {
+    return db.select({
+        kachurTeamTable,
+        memberNickname: userTable.nickname,
+        memberName: userTable.name,
+        userId: userTable.userId,
+        art: userTable.art,
+    })
+        .from(kachurTeamTable)
+        .where(eq(kachurTeamTable.kachurId, kachurId))
+        .leftJoin(memberTable, eq(memberTable.memberId, kachurTeamTable.memberId))
+        .leftJoin(userTable, eq(userTable.userId, memberTable.userId));
 }

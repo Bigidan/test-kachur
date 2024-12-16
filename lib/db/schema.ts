@@ -187,10 +187,35 @@ export const filesTable = sqliteTable('files', {
 
 });
 
+
+
+export const musicTable = sqliteTable('music', {
+    musicId: integer('music_id').primaryKey(),
+    musicName: text('music_name'),
+    musicDescription: text('music_description'),
+    musicImage: text('music_url'),
+    musicUrl: text('music_url'),
+});
+
 export const kachurTeamTable = sqliteTable('kachur_team', {
     kachurId: integer('kachur_id').primaryKey(),
     memberId: integer('member_id', { mode: 'number' }).references(() => memberTable.memberId),
     positionId: integer('position_id'),
     type: integer('type'),
+    tiktok: text('tiktok'),
+    youtube: text('youtube'),
+    telegram: text('telegram'),
+    twitch: text('twitch'),
+    status: text('status'),
+    date: text('date'),
+    social: text('social'),
+    pet: text('pet'),
+    anime: text('anime'),
+    films: text('films'),
+    games: text('games'),
 });
 
+export const playlistTable = sqliteTable('playlists', {
+    musicId: integer('music_id').references(() => musicTable.musicId),
+    kachurId: integer('music_id').references(() => kachurTeamTable.kachurId),
+});

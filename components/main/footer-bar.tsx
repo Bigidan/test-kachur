@@ -25,7 +25,7 @@ const FooterBar = () => {
                     <div className="flex flex-col items-center justify-between self-end text-xl font-semibold col-span-2">
                         <div className="text-xl font-extrabold mb-20">Соцмережі</div>
                         <div className="space-y-1">
-                        <a target="_blank" href="" className="opacity-80 flex items-center gap-2 hover:opacity-100 transition">
+                        <a target="_blank" href="https://t.me/Studio_Kachur" className="opacity-80 flex items-center gap-2 hover:opacity-100 transition">
                             <Image src="/telegram.png" width={22} height={22} alt=""/>
                             Telegram
                         </a>

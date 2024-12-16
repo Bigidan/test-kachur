@@ -103,10 +103,10 @@ const TeamViewPage = () => {
                 }
             </div>
 
-            <div className="max-w-screen-xl grid grid-cols-4 gap-32 my-12">
-                <div className="flex flex-col gap-12 col-span-2">
+            <div className="max-w-screen-xl flex flex-wrap justify-around my-12">
+                <div className="flex flex-col gap-12">
                     <div className="text-center">Запрошені Актори</div>
-                    <div className="max-w-screen-xl grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-32">
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] min-[366px]:grid-cols-2 gap-32">
                         {
                             guestActors?.map((profile: ProfileType) => {
                                 return (
@@ -136,7 +136,7 @@ const TeamViewPage = () => {
                 </div>
                 <div className="flex flex-col gap-12">
                     <div className="text-center">Перекладач</div>
-                    <div className="max-w-screen-xl grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-32">
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-32">
                         {
                             translaters?.map((profile: ProfileType) => {
                                 return (
@@ -166,7 +166,7 @@ const TeamViewPage = () => {
                 </div>
                 <div className="flex flex-col gap-12">
                     <div className="text-center">Візуальний ряд</div>
-                    <div className="max-w-screen-xl grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-32">
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-32">
                         {
                             visual?.map((profile: ProfileType) => {
                                 return (

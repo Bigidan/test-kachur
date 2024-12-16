@@ -68,8 +68,8 @@ const MainHeaderBar = () => {
                                 <span className="sr-only">Пошук</span>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[1200px] p-4">
-                            <div className="flex">
+                        <DropdownMenuContent align="end" className="w-[1200px] max-h-[714px] p-4">
+                            <div className="flex mb-4">
                                 <Input placeholder="Пошук"
                                        value={searchQuery}
                                        onChange={(e) => setSearchQuery(e.target.value)}

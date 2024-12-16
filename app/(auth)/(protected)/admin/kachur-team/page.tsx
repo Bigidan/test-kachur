@@ -43,10 +43,21 @@ import { getAllKachurTeam } from "@/lib/db/admin";
 
 // Типи для даних
 type KachurTeam = {
-    positionId: number | null;
     kachurId: number;
     memberId: number | null;
+    positionId: number | null;
     type: number | null;
+    tiktok: string | null;
+    youtube: string | null;
+    telegram: string | null;
+    twitch: string | null;
+    status: string | null;
+    date: string | null;
+    social: string | null;
+    pet: string | null;
+    anime: string | null;
+    films: string | null;
+    games: string | null;
 };
 
 type Member = {
@@ -72,14 +83,25 @@ export default function KachurTeamPage() {
     const [selectedType, setSelectedType] = useState<number | null>(null);
     const [positionId, setPositionId] = useState<number>(0);
 
+    // Додаткові поля
+    const [tiktok, setTiktok] = useState<string>('');
+    const [youtube, setYoutube] = useState<string>('');
+    const [telegram, setTelegram] = useState<string>('');
+    const [twitch, setTwitch] = useState<string>('');
+    const [status, setStatus] = useState<string>('');
+    const [date, setDate] = useState<string>('');
+    const [social, setSocial] = useState<string>('');
+    const [pet, setPet] = useState<string>('');
+    const [anime, setAnime] = useState<string>('');
+    const [films, setFilms] = useState<string>('');
+    const [games, setGames] = useState<string>('');
+
     // Стан редагування
     const [editKachurId, setEditKachurId] = useState<number | null>(null);
 
-
-
     const fetchTeam = async () => {
         try {
-            const data = await getAllKachurTeam(); // Функція отримання команди
+            const data = await getAllKachurTeam();
             setTeam(data);
         } catch (error) {
             console.error("Помилка при отриманні команди:", error);
@@ -88,7 +110,7 @@ export default function KachurTeamPage() {
 
     const fetchMembers = async () => {
         try {
-            const data = await getTeam(); // Функція отримання членів команди
+            const data = await getTeam();
             setMemberList(data);
         } catch (error) {
             console.error("Помилка при отриманні членів команди:", error);
@@ -106,13 +128,24 @@ export default function KachurTeamPage() {
                 await addKachurTeamMember(
                     selectedMember[0].memberId,
                     selectedType,
-                    positionId
+                    positionId,
+                    {
+                        tiktok,
+                        youtube,
+                        telegram,
+                        twitch,
+                        status,
+                        date,
+                        social,
+                        pet,
+                        anime,
+                        films,
+                        games
+                    }
                 );
                 await fetchTeam();
                 // Скидання форми
-                setSelectedMember(null);
-                setSelectedType(null);
-                setPositionId(0);
+                resetForm();
             } catch (error) {
                 console.error("Помилка при додаванні члена команди:", error);
             }
@@ -124,25 +157,52 @@ export default function KachurTeamPage() {
     const handleUpdateTeamMember = async () => {
         if (editKachurId && selectedMember && selectedType !== null) {
             try {
-                console.log(editKachurId, selectedMember[0].memberId, selectedType, positionId);
                 const result = await updateKachurTeamMember(
                     editKachurId,
                     selectedMember[0].memberId,
                     selectedType,
-                    positionId
+                    positionId,
+                    {
+                        tiktok,
+                        youtube,
+                        telegram,
+                        twitch,
+                        status,
+                        date,
+                        social,
+                        pet,
+                        anime,
+                        films,
+                        games
+                    }
                 );
 
                 if (result.success) {
                     await fetchTeam();
-                    setEditKachurId(null);
-                    setSelectedMember(null);
-                    setSelectedType(null);
-                    setPositionId(0);
+                    resetForm();
                 }
             } catch (error) {
                 console.error("Помилка при оновленні члена команди:", error);
             }
         }
+    };
+
+    const resetForm = () => {
+        setEditKachurId(null);
+        setSelectedMember(null);
+        setSelectedType(null);
+        setPositionId(0);
+        setTiktok('');
+        setYoutube('');
+        setTelegram('');
+        setTwitch('');
+        setStatus('');
+        setDate('');
+        setSocial('');
+        setPet('');
+        setAnime('');
+        setFilms('');
+        setGames('');
     };
 
     const handleDeleteTeamMember = async (kachurId: number) => {
@@ -156,6 +216,7 @@ export default function KachurTeamPage() {
     };
 
     const columns: ColumnDef<KachurTeam>[] = [
+        // Попередні колонки...
         {
             accessorKey: "kachurId",
             header: "ID",
@@ -185,6 +246,23 @@ export default function KachurTeamPage() {
             accessorKey: "positionId",
             header: "Позиція",
         },
+        // Додаємо нові колонки
+        {
+            accessorKey: "tiktok",
+            header: "TikTok",
+        },
+        {
+            accessorKey: "youtube",
+            header: "YouTube",
+        },
+        {
+            accessorKey: "telegram",
+            header: "Telegram",
+        },
+        {
+            accessorKey: "status",
+            header: "Статус",
+        },
         {
             header: "Дії",
             id: "actions",
@@ -206,6 +284,19 @@ export default function KachurTeamPage() {
                                     if (member) setSelectedMember([member]);
                                     setSelectedType(teamMember.type);
                                     setPositionId(teamMember.positionId || 0);
+
+                                    // Встановлення додаткових полів
+                                    setTiktok(teamMember.tiktok || '');
+                                    setYoutube(teamMember.youtube || '');
+                                    setTelegram(teamMember.telegram || '');
+                                    setTwitch(teamMember.twitch || '');
+                                    setStatus(teamMember.status || '');
+                                    setDate(teamMember.date || '');
+                                    setSocial(teamMember.social || '');
+                                    setPet(teamMember.pet || '');
+                                    setAnime(teamMember.anime || '');
+                                    setFilms(teamMember.films || '');
+                                    setGames(teamMember.games || '');
                                 }}
                             >
                                 Редагувати
@@ -243,8 +334,8 @@ export default function KachurTeamPage() {
                             </DialogDescription>
                         </DialogHeader>
 
-                        <div className="grid gap-4 py-4">
-                            {/* Вибір члена команди */}
+                        <div className="grid grid-cols-2 gap-4 py-4">
+                            {/* Попередні поля */}
                             <div>
                                 <Label>Член команди</Label>
                                 <Popover>
@@ -276,7 +367,6 @@ export default function KachurTeamPage() {
                                     </PopoverContent>
                                 </Popover>
                             </div>
-
                             {/* Вибір типу */}
                             <div>
                                 <Label>Тип</Label>
@@ -318,16 +408,109 @@ export default function KachurTeamPage() {
                                     placeholder="Введіть позицію"
                                 />
                             </div>
-                        </div>
 
-                        <DialogFooter>
-                            <Button type="button" onClick={handleAddTeamMember}>Додати</Button>
-                        </DialogFooter>
+                            {/* Додаткові соціальні поля */}
+                            <div>
+                                <Label>TikTok</Label>
+                                <Input
+                                    value={tiktok}
+                                    onChange={(e) => setTiktok(e.target.value)}
+                                    placeholder="TikTok профіль"
+                                />
+                            </div>
+                            <div>
+                                <Label>YouTube</Label>
+                                <Input
+                                    value={youtube}
+                                    onChange={(e) => setYoutube(e.target.value)}
+                                    placeholder="YouTube канал"
+                                />
+                            </div>
+                            <div>
+                                <Label>Telegram</Label>
+                                <Input
+                                    value={telegram}
+                                    onChange={(e) => setTelegram(e.target.value)}
+                                    placeholder="Telegram нік"
+                                />
+                            </div>
+                            <div>
+                                <Label>Twitch</Label>
+                                <Input
+                                    value={twitch}
+                                    onChange={(e) => setTwitch(e.target.value)}
+                                    placeholder="Twitch канал"
+                                />
+                            </div>
+
+                            {/* Додаткові інформаційні поля */}
+                            <div>
+                                <Label>Статус</Label>
+                                <Input
+                                    value={status}
+                                    onChange={(e) => setStatus(e.target.value)}
+                                    placeholder="Поточний статус"
+                                />
+                            </div>
+                            <div>
+                                <Label>Дата</Label>
+                                <Input
+                                    value={date}
+                                    onChange={(e) => setDate(e.target.value)}
+                                    placeholder="Дата народження"
+                                />
+                            </div>
+                            <div>
+                                <Label>Особистість</Label>
+                                <Input
+                                    value={social}
+                                    onChange={(e) => setSocial(e.target.value)}
+                                    placeholder="Тип особистості"
+                                />
+                            </div>
+
+                            {/* Особисті інтереси */}
+                            <div>
+                                <Label>Улюблена тварина</Label>
+                                <Input
+                                    value={pet}
+                                    onChange={(e) => setPet(e.target.value)}
+                                    placeholder="Улюблена тварина"
+                                />
+                            </div>
+                            <div>
+                                <Label>Улюблене аніме</Label>
+                                <Input
+                                    value={anime}
+                                    onChange={(e) => setAnime(e.target.value)}
+                                    placeholder="Улюблене аніме"
+                                />
+                            </div>
+                            <div>
+                                <Label>Улюблені фільми</Label>
+                                <Input
+                                    value={films}
+                                    onChange={(e) => setFilms(e.target.value)}
+                                    placeholder="Улюблені фільми"
+                                />
+                            </div>
+                            <div>
+                                <Label>Улюблені ігри</Label>
+                                <Input
+                                    value={games}
+                                    onChange={(e) => setGames(e.target.value)}
+                                    placeholder="Улюблені ігри"
+                                />
+                            </div>
+                        </div>
+                            <DialogFooter>
+                                <Button type="button" onClick={handleAddTeamMember}>Додати</Button>
+                            </DialogFooter>
                     </DialogContent>
                 </Dialog>
 
-                {/* Діалог редагування */}
-                <Dialog open={editKachurId !== null} onOpenChange={(open) => { if (!open) setEditKachurId(null); }}>
+                {/* Діалог редагування (майже ідентичний до діалогу додавання) */}
+                <Dialog open={editKachurId !== null} onOpenChange={(open) => { if (!open) resetForm(); }}>
                     <DialogContent className="sm:max-w-[625px]">
                         <DialogHeader>
                             <DialogTitle>Редагування члена команди</DialogTitle>
@@ -336,8 +519,7 @@ export default function KachurTeamPage() {
                             </DialogDescription>
                         </DialogHeader>
 
-                        <div className="grid gap-4 py-4">
-                            {/* Вибір члена команди */}
+                        <div className="grid grid-cols-2 gap-4 py-4">
                             <div>
                                 <Label>Член команди</Label>
                                 <Popover>
@@ -411,11 +593,105 @@ export default function KachurTeamPage() {
                                     placeholder="Введіть позицію"
                                 />
                             </div>
-                        </div>
 
-                        <DialogFooter>
-                            <Button type="button" onClick={handleUpdateTeamMember}>Застосувати</Button>
-                        </DialogFooter>
+                            {/* Додаткові соціальні поля */}
+                            <div>
+                                <Label>TikTok</Label>
+                                <Input
+                                    value={tiktok}
+                                    onChange={(e) => setTiktok(e.target.value)}
+                                    placeholder="TikTok профіль"
+                                />
+                            </div>
+                            <div>
+                                <Label>YouTube</Label>
+                                <Input
+                                    value={youtube}
+                                    onChange={(e) => setYoutube(e.target.value)}
+                                    placeholder="YouTube канал"
+                                />
+                            </div>
+                            <div>
+                                <Label>Telegram</Label>
+                                <Input
+                                    value={telegram}
+                                    onChange={(e) => setTelegram(e.target.value)}
+                                    placeholder="Telegram нік"
+                                />
+                            </div>
+                            <div>
+                                <Label>Twitch</Label>
+                                <Input
+                                    value={twitch}
+                                    onChange={(e) => setTwitch(e.target.value)}
+                                    placeholder="Twitch канал"
+                                />
+                            </div>
+
+                            {/* Додаткові інформаційні поля */}
+                            <div>
+                                <Label>Статус</Label>
+                                <Input
+                                    value={status}
+                                    onChange={(e) => setStatus(e.target.value)}
+                                    placeholder="Поточний статус"
+                                />
+                            </div>
+                            <div>
+                                <Label>Дата</Label>
+                                <Input
+                                    value={date}
+                                    onChange={(e) => setDate(e.target.value)}
+                                    placeholder="Дата народження"
+                                />
+                            </div>
+                            <div>
+                                <Label>Особистість</Label>
+                                <Input
+                                    value={social}
+                                    onChange={(e) => setSocial(e.target.value)}
+                                    placeholder="Тип особистості"
+                                />
+                            </div>
+
+                            {/* Особисті інтереси */}
+                            <div>
+                                <Label>Улюблена тварина</Label>
+                                <Input
+                                    value={pet}
+                                    onChange={(e) => setPet(e.target.value)}
+                                    placeholder="Улюблена тварина"
+                                />
+                            </div>
+                            <div>
+                                <Label>Улюблене аніме</Label>
+                                <Input
+                                    value={anime}
+                                    onChange={(e) => setAnime(e.target.value)}
+                                    placeholder="Улюблене аніме"
+                                />
+                            </div>
+                            <div>
+                                <Label>Улюблені фільми</Label>
+                                <Input
+                                    value={films}
+                                    onChange={(e) => setFilms(e.target.value)}
+                                    placeholder="Улюблені фільми"
+                                />
+                            </div>
+                            <div>
+                                <Label>Улюблені ігри</Label>
+                                <Input
+                                    value={games}
+                                    onChange={(e) => setGames(e.target.value)}
+                                    placeholder="Улюблені ігри"
+                                />
+                            </div>
+
+                            <DialogFooter>
+                                <Button type="button" onClick={handleUpdateTeamMember}>Застосувати</Button>
+                            </DialogFooter>
+                        </div>
                     </DialogContent>
                 </Dialog>
             </div>
@@ -425,5 +701,5 @@ export default function KachurTeamPage() {
                 data={team}
             />
         </div>
-    );
+);
 }

@@ -56,16 +56,16 @@ export function HeaderNavigation() {
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href="/contacts" legacyBehavior passHref>
+                    <Link href="/about" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                            Контакти
+                            Про нас
                         </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href="/about" legacyBehavior passHref>
+                    <Link href="/contacts" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                            Про нас
+                            Контакти
                         </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>

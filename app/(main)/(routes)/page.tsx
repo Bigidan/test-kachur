@@ -25,7 +25,7 @@ export default function Home() {
             </div>
             <div className="hero">
 
-                <div className="mx-auto max-w-screen-xl flex my-5">
+                <div className="mx-auto max-w-screen-xl flex my-5" id="target-element">
                     <HeadTitle text="наші" highlight="проєкти"/>
                 </div>
 
@@ -44,7 +44,7 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div className="mx-auto max-w-screen-xl py-4 box-content" id="target-element">
+                <div className="mx-auto max-w-screen-xl py-4 box-content">
                     <PopAnimeComponent searchQuery={searchQuery}/>
                 </div>
             </div>

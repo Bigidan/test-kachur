@@ -981,20 +981,72 @@ export async function deleteKachurTeamMember(kachurId: number) {
     return { success: true };
 }
 
-export async function addKachurTeamMember(memberId: number, type: number, positionId: number ) {
+type KachurTeam = {
+    kachurId: number;
+    memberId: number | null;
+    positionId: number | null;
+    type: number | null;
+    tiktok: string | null;
+    youtube: string | null;
+    telegram: string | null;
+    twitch: string | null;
+    status: string | null;
+    date: string | null;
+    social: string | null;
+    pet: string | null;
+    anime: string | null;
+    films: string | null;
+    games: string | null;
+};
+
+// Updated server-side functions
+export async function addKachurTeamMember(
+    memberId: number,
+    type: number,
+    positionId: number,
+    additionalData: Partial<KachurTeam> = {}
+) {
     return db.insert(kachurTeamTable).values({
         memberId: memberId,
         type: type,
         positionId: positionId,
+        tiktok: additionalData.tiktok || null,
+        youtube: additionalData.youtube || null,
+        telegram: additionalData.telegram || null,
+        twitch: additionalData.twitch || null,
+        status: additionalData.status || null,
+        date: additionalData.date || null,
+        social: additionalData.social || null,
+        pet: additionalData.pet || null,
+        anime: additionalData.anime || null,
+        films: additionalData.films || null,
+        games: additionalData.games || null,
     }).returning({ id: kachurTeamTable.kachurId });
 }
 
-export async function updateKachurTeamMember(kachurId: number, memberId: number, type: number, positionId: number){
+export async function updateKachurTeamMember(
+    kachurId: number,
+    memberId: number,
+    type: number,
+    positionId: number,
+    additionalData: Partial<KachurTeam> = {}
+) {
     await db.update(kachurTeamTable)
         .set({
             memberId: memberId,
             type: type,
             positionId: positionId,
+            tiktok: additionalData.tiktok || null,
+            youtube: additionalData.youtube || null,
+            telegram: additionalData.telegram || null,
+            twitch: additionalData.twitch || null,
+            status: additionalData.status || null,
+            date: additionalData.date || null,
+            social: additionalData.social || null,
+            pet: additionalData.pet || null,
+            anime: additionalData.anime || null,
+            films: additionalData.films || null,
+            games: additionalData.games || null,
         })
         .where(eq(kachurTeamTable.kachurId, kachurId));
 

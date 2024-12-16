@@ -175,9 +175,7 @@ const PopAnimeComponent = ({
                 >
                     {hasMoreAnime ? (
                         <Loader className="animate-spin" style={{ width: "40px", height: "40px" }} />
-                    ) : (
-                        <p className="text-center text-gray-500 mt-4">Більше аніме немає.</p>
-                    )}
+                    ) : null}
                 </div>
             )}
         </div>
