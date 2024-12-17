@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import React, { useEffect, useState } from "react";
 import {notFound, useParams} from "next/navigation";
-import {getCharactersByActorId, getKachurTeamById} from "@/lib/db/userDB";
+import {getCharactersByActorId, getKachurColors, getKachurTeamById} from "@/lib/db/userDB";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -52,9 +52,22 @@ type ProfileType = {
     animeName: string | null;
 }
 
+type ColorsType = {
+    colors: {
+        colorId: number;
+        colorName: string | null;
+        colorHex: string | null;
+    } | null;
+    team_color: {
+        kachurId: number | null;
+        colorId: number | null;
+    }
+}
+
 export default function TeamUserId() {
     const params = useParams();
     const [dubberData, setDubberData] = useState<DubberData | null>(null); // Стан для збереження даних
+    const [colorData, setColorData] = useState<ColorsType[]>([]); // Стан для збереження даних
     const [loading, setLoading] = useState<boolean>(true); // Стан для відображення завантаження
     const [error, setError] = useState<string | null>(null); // Стан для обробки помилок
 
@@ -94,6 +107,10 @@ export default function TeamUserId() {
                     getCharactersByActorId(data[0].kachurTeamTable.memberId || 0, 0)
                         .then((characterData) => {
                             setProfileData(characterData);
+                        });
+                    getKachurColors(userId)
+                        .then((colorsData) => {
+                            setColorData(colorsData);
                         })
                 }
 
@@ -107,6 +124,28 @@ export default function TeamUserId() {
 
 
     }, [dubberData?.kachurTeamTable.memberId, params.userId]);
+
+        const favoriteColors = colorData
+            .map((item, index) => {
+                const colorName = item.colors?.colorName;
+                const colorHex = item.colors?.colorHex;
+
+                return colorName && colorHex ? (
+                    <span key={item.colors?.colorId}>
+                        <span
+                            style={{
+                                color: colorHex,
+                                fontWeight: 'bold',
+                                marginLeft: '8px',
+                            }}
+                        >
+                            {colorName}
+                        </span>
+                        {index < colorData.length - 1 && ','}
+                    </span>
+                ) : null;
+            })
+            .filter(Boolean);
 
     if (loading) {
         return <div>Завантаження...</div>;
@@ -126,35 +165,35 @@ export default function TeamUserId() {
 
                 {dubberData.kachurTeamTable.tiktok && (
                     <Button size="iconBig">
-                        <a href={dubberData.kachurTeamTable.tiktok}>
+                        <a target="_blank" href={dubberData.kachurTeamTable.tiktok}>
                             <Image src="/tiktok_btn.png" alt="tiktok" width={50} height={50}/>
                         </a>
                     </Button>
                 )}
                 {dubberData.kachurTeamTable.youtube && (
                     <Button size="iconBig">
-                        <a href={dubberData.kachurTeamTable.youtube}>
+                        <a target="_blank" href={dubberData.kachurTeamTable.youtube}>
                             <Image src="/youtube_btn.png" alt="youtube" width={50} height={50}/>
                         </a>
                     </Button>
                 )}
                 {dubberData.kachurTeamTable.telegram && (
                     <Button size="iconBig">
-                        <a href={dubberData.kachurTeamTable.telegram}>
+                        <a target="_blank" href={dubberData.kachurTeamTable.telegram}>
                             <Image src="/telegram_btn.png" alt="telegram    " width={50} height={50}/>
                         </a>
                     </Button>
                 )}
                 {dubberData.kachurTeamTable.twitch && (
                     <Button size="iconBig">
-                        <a href={dubberData.kachurTeamTable.twitch}>
+                        <a target="_blank" href={dubberData.kachurTeamTable.twitch}>
                             <Image src="/twitch_btn.png" alt="twitch" width={50} height={50}/>
                         </a>
                     </Button>
                 )}
                 {dubberData.kachurTeamTable.instagram && (
                     <Button size="iconBig">
-                        <a href={dubberData.kachurTeamTable.instagram}>
+                        <a target="_blank" href={dubberData.kachurTeamTable.instagram}>
                             <Image src="/instagram_btn.png" alt="instagram" width={50} height={50}/>
                         </a>
                     </Button>
@@ -239,7 +278,7 @@ export default function TeamUserId() {
                         <h3 className="mb-4">{dubberData.kachurTeamTable.social}</h3>
 
                         <h4><span className="opacity-70">Домашній улюбленець:</span> {dubberData.kachurTeamTable.pet}</h4>
-                        <h4><span className="opacity-70">Улюблений колір:</span> Жовтий, Ліловий</h4>
+                        <h4><span className="opacity-70">Улюблений колір:</span>{favoriteColors.length > 0 ? favoriteColors : ' Немає даних'}</h4>
                         <h4><span className="opacity-70">Улюблені аніме:</span> {dubberData.kachurTeamTable.anime}</h4>
                         <h4><span className="opacity-70">Улюблені фільми:</span> {dubberData.kachurTeamTable.films}</h4>
                         <h4><span className="opacity-70">Улюблені ігри:</span> {dubberData.kachurTeamTable.games}</h4>

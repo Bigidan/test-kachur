@@ -17,13 +17,13 @@ import {
     animeVideoEditingTable,
     animeVocalsTable,
     animeVoiceActorsTable,
-    characterTable,
+    characterTable, colorsTable,
     directorTable,
     episodeTable, filesTable,
     genreTable, kachurTeamTable,
-    memberTable,
+    memberTable, musicTable, playlistTable,
     popularityTable,
-    roleTable,
+    roleTable, teamColorTable,
     userTable
 } from "@/lib/db/schema";
 import {and, eq, like, SQL} from "drizzle-orm";
@@ -979,7 +979,7 @@ export async function addFileToBase(
 }
 
 export async function getAllKachurTeam() {
-    return db.select().from(kachurTeamTable);
+    return db.select().from(kachurTeamTable)
 }
 
 export async function deleteKachurTeamMember(kachurId: number) {
@@ -1059,4 +1059,129 @@ export async function updateKachurTeamMember(
         .where(eq(kachurTeamTable.kachurId, kachurId));
 
     return { success: true };
+}
+
+export async function getColors() {
+    return db.select().from(colorsTable);
+}
+
+
+export async function getTeamColors(kachurId: number): Promise<number[]> {
+    const teamColors = await db.select({
+        colorId: teamColorTable.colorId
+    }).from(teamColorTable)
+        .where(eq(teamColorTable.kachurId, kachurId));
+
+    return teamColors
+        .map(color => color.colorId)
+        .filter(Boolean) as number[];
+}
+
+export async function addTeamColors(kachurId: number, colorIds: number[]): Promise<void> {
+    // Видаляємо попередні кольори
+    await db.delete(teamColorTable).where(eq(teamColorTable.kachurId, kachurId));
+
+    // Додаємо нові кольори
+    const colorInserts = colorIds.map(colorId => ({
+        kachurId,
+        colorId
+    }));
+
+    await db.insert(teamColorTable).values(colorInserts);
+}
+
+export async function updateColor(colorId: number, updateData: Partial<Color>): Promise<void> {
+    await db.update(colorsTable)
+        .set({
+            colorName: updateData.colorName,
+            colorHex: updateData.colorHex
+        })
+        .where(eq(colorsTable.colorId, colorId));
+}
+
+
+type Color = {
+    colorName: string | null;
+    colorHex: string | null;
+}
+
+export async function addNewColor(newColor: Omit<Color, 'colorId'>): Promise<number> {
+    const result = await db.insert(colorsTable)
+        .values({
+            colorName: newColor.colorName,
+            colorHex: newColor.colorHex
+        })
+        .returning({ insertedId: colorsTable.colorId });
+
+    return result[0].insertedId;
+}
+
+export async function deleteColor(colorId: number): Promise<void> {
+    await db.delete(colorsTable).where(eq(colorsTable.colorId, colorId));
+}
+
+export interface Music {
+    musicId: number;
+    musicName: string | null;
+    musicDescription: string | null;
+    musicImage: string | null;
+    musicUrl: string | null;
+}
+
+export async function getMusic(): Promise<Music[]> {
+    return db.select().from(musicTable);
+}
+
+export async function addNewMusic(musicData: Omit<Music, 'musicId'>): Promise<number> {
+    const result = await db.insert(musicTable)
+        .values({
+            musicName: musicData.musicName,
+            musicDescription: musicData.musicDescription,
+            musicImage: musicData.musicImage,
+            musicUrl: musicData.musicUrl
+        })
+        .returning({ insertedId: musicTable.musicId });
+
+    return result[0].insertedId;
+}
+
+export async function updateMusic(musicId: number, updateData: Partial<Music>): Promise<void> {
+    await db.update(musicTable)
+        .set({
+            musicName: updateData.musicName,
+            musicDescription: updateData.musicDescription,
+            musicImage: updateData.musicImage,
+            musicUrl: updateData.musicUrl
+        })
+        .where(eq(musicTable.musicId, musicId));
+}
+
+export async function deleteMusic(musicId: number): Promise<void> {
+    await db.delete(musicTable)
+        .where(eq(musicTable.musicId, musicId));
+}
+
+
+export async function addPlaylistMusic(kachurId: number, musicIds: number[]): Promise<void> {
+    // Видаляємо попередні кольори
+    await db.delete(playlistTable).where(eq(teamColorTable.kachurId, kachurId));
+
+    // Додаємо нові кольори
+    const musicInserts = musicIds.map(musicId => ({
+        kachurId,
+        musicId
+    }));
+
+    await db.insert(playlistTable).values(musicInserts);
+}
+
+export async function getKachurMusic(kachurId: number): Promise<number[]> {
+    const teamMusics = await db.select({
+        musicId: playlistTable.musicId
+    }).from(playlistTable)
+        .where(eq(playlistTable.kachurId, kachurId));
+
+    return teamMusics
+        .map(music => music.musicId)
+        .filter(Boolean) as number[];
 }

@@ -17,11 +17,11 @@ import {
     animeVideoEditingTable,
     animeVocalsTable,
     animeVoiceActorsTable,
-    characterTable,
+    characterTable, colorsTable,
     directorTable,
     episodeTable,
     genreTable, kachurTeamTable,
-    memberTable, roleTable,
+    memberTable, playlistTable, roleTable, teamColorTable,
     userTable
 } from "@/lib/db/schema";
 import {and, desc, eq, isNotNull, isNull, like, ne, or, sql} from "drizzle-orm";
@@ -643,4 +643,15 @@ export async function toggleFavorite(animeId: number, userId: number) {
         });
         return { success: true, favorite: true };
     }
+}
+
+export async function getKachurColors(kachurId: number) {
+    return db.select()
+        .from(teamColorTable)
+        .where(eq(teamColorTable.kachurId, kachurId))
+        .leftJoin(colorsTable, eq(colorsTable.colorId, teamColorTable.colorId))
+}
+
+export async function getKachurPlaylist(kachurId: number) {
+    return db.select().from(playlistTable).where(eq(playlistTable.kachurId, kachurId));
 }

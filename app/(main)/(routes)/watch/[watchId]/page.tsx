@@ -32,7 +32,7 @@ export default async function WatchPage({
     const watchId = (await params).watchId;
     if (isNaN(Number(watchId))) return <NotFoundK/>;
 
-    const animeData: AnimeData = await getAllAnimeData(Number(watchId), user.userId);
+    const animeData: AnimeData = await getAllAnimeData(Number(watchId), user?.userId);
     const {
         anime: animeDataEx,
         genres: animeGenres,
@@ -130,7 +130,9 @@ export default async function WatchPage({
                             </div>
                             <div className="flex flex-col gap-2">
 
-                                <AnimeFavoriteButton animeId={Number(watchId)} userId={user.userId} isFavorite={!!animeDataEx[0].isFavorite}/>
+                                {user && (
+                                    <AnimeFavoriteButton animeId={Number(watchId)} userId={user.userId} isFavorite={!!animeDataEx[0].isFavorite}/>
+                                )}
 
 
                                 <Button variant="kachurGrad" size="kachurGrad">

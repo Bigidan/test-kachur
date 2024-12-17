@@ -227,3 +227,14 @@ export const animeFavorite = sqliteTable('anime_favorite', {
     animeId: integer('anime_id').references(() => animeTable.animeId),
     userId: integer('user_id').references(() => userTable.userId),
 })
+
+export const colorsTable = sqliteTable('colors', {
+    colorId: integer('color_id').primaryKey(),
+    colorName: text('color_name'),
+    colorHex: text('color_hex'),
+});
+
+export const teamColorTable = sqliteTable('team_color', {
+    kachurId: integer('kachur_id').references(() => kachurTeamTable.kachurId),
+    colorId: integer('color_id').references(() => colorsTable.colorId),
+});

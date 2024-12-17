@@ -38,9 +38,18 @@ import {
     CommandList
 } from "@/components/ui/command";
 import { Check, ChevronsUpDown } from "lucide-react";
-import {addKachurTeamMember, deleteKachurTeamMember, getTeam, updateKachurTeamMember} from "@/lib/db/admin";
+import {
+    addKachurTeamMember, addPlaylistMusic,
+    addTeamColors,
+    deleteKachurTeamMember,
+    getColors, getKachurMusic, getMusic,
+    getTeam, getTeamColors,
+    updateKachurTeamMember
+} from "@/lib/db/admin";
 import { getAllKachurTeam } from "@/lib/db/admin";
 import {Textarea} from "@/components/ui/textarea";
+import {ColorManagement} from "@/app/(auth)/(protected)/admin/kachur-team/color-manager";
+import {MusicManagement} from "@/app/(auth)/(protected)/admin/kachur-team/music-manager";
 
 // Типи для даних
 type KachurTeam = {
@@ -67,6 +76,21 @@ type Member = {
     userId: number | null;
     nickname: string | null;
 };
+
+type Color = {
+    colorId: number;
+    colorName: string | null;
+    colorHex: string | null;
+}
+
+type Music = {
+    musicId: number;
+    musicName: string | null;
+    musicDescription: string | null;
+    musicImage: string | null;
+    musicUrl: string | null;
+}
+
 
 const typeLabels = {
     0: "Актори",
@@ -99,6 +123,14 @@ export default function KachurTeamPage() {
     const [films, setFilms] = useState<string>('');
     const [games, setGames] = useState<string>('');
 
+
+    const [colorList, setColorList] = useState<Color[]>([]); // Всі кольори з БД
+    const [selectedColors, setSelectedColors] = useState<number[]>([]);
+
+    const [musicList, setMusicList] = useState<Music[]>([]); // Всі кольори з БД
+    const [selectedMusics, setSelectedMusics] = useState<number[]>([]);
+
+
     // Стан редагування
     const [editKachurId, setEditKachurId] = useState<number | null>(null);
 
@@ -109,6 +141,61 @@ export default function KachurTeamPage() {
         } catch (error) {
             console.error("Помилка при отриманні команди:", error);
         }
+    };
+
+    useEffect(() => {
+        const fetchColors = async () => {
+            try {
+                const data = await getColors();
+                setColorList(data);
+            } catch (error) {
+                console.error("Помилка при отриманні кольорів:", error);
+            }
+        };
+
+        fetchColors();
+    }, []);
+
+    useEffect(() => {
+        const fetchMusics = async () => {
+            try {
+                const data = await getMusic();
+                setMusicList(data);
+            } catch (error) {
+                console.error("Помилка при отриманні музики:", error);
+            }
+        };
+
+        fetchMusics();
+    }, []);
+
+    const fetchKachurColors = async (kachurId: number) => {
+        const colors = await getTeamColors(kachurId);
+        setSelectedColors(colors);
+    }
+
+    const fetchKachurMusics = async (kachurId: number) => {
+        const music = await getKachurMusic(kachurId);
+        setSelectedMusics(music);
+    }
+
+
+    const handleColorToggle = (colorId: number) => {
+        const newSelectedColors = selectedColors.includes(colorId)
+            ? selectedColors.filter(id => id !== colorId)
+            : [...selectedColors, colorId];
+
+        setSelectedColors(newSelectedColors);
+        addTeamColors(editKachurId || 0, newSelectedColors);
+    };
+
+    const handleMusicToggle = (musicId: number) => {
+        const newSelectedMusics = selectedMusics.includes(musicId)
+            ? selectedMusics.filter(id => id !== musicId)
+            : [...selectedMusics, musicId];
+
+        setSelectedMusics(newSelectedMusics);
+        addPlaylistMusic(editKachurId || 0, newSelectedMusics);
     };
 
     const fetchMembers = async () => {
@@ -289,6 +376,8 @@ export default function KachurTeamPage() {
                                     if (member) setSelectedMember([member]);
                                     setSelectedType(teamMember.type);
                                     setPositionId(teamMember.positionId || 0);
+                                    fetchKachurColors(teamMember.kachurId);
+                                    fetchKachurMusics(teamMember.kachurId);
 
                                     // Встановлення додаткових полів
                                     setTiktok(teamMember.tiktok || '');
@@ -523,6 +612,10 @@ export default function KachurTeamPage() {
                     </DialogContent>
                 </Dialog>
 
+                <ColorManagement />
+
+                <MusicManagement />
+
                 {/* Діалог редагування (майже ідентичний до діалогу додавання) */}
                 <Dialog open={editKachurId !== null} onOpenChange={(open) => { if (!open) resetForm(); }}>
                     <DialogContent className="sm:max-w-[625px]">
@@ -590,6 +683,129 @@ export default function KachurTeamPage() {
                                                             {label}
                                                         </CommandItem>
                                                     ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+
+                            <div>
+                                <Label>Обирання кольорів</Label>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            className="w-full justify-between"
+                                        >
+                                            {selectedColors.length > 0
+                                                ? colorList
+                                                    .filter(c => selectedColors.includes(c.colorId))
+                                                    .map(c => c.colorName)
+                                                    .join(", ")
+                                                : "Виберіть кольори"}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4"/>
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-full p-0">
+                                        <Command>
+                                            <CommandInput placeholder="Пошук кольору..."/>
+                                            <CommandEmpty>Кольори не знайдено.</CommandEmpty>
+                                            <CommandList>
+                                                <CommandGroup>
+                                                    {colorList.map((color) => {
+                                                        const isSelected = selectedColors.includes(color.colorId);
+
+                                                        return (
+                                                            <CommandItem
+                                                                key={color.colorId}
+                                                                onSelect={() => handleColorToggle(color.colorId)}
+                                                            >
+                                                                <div
+                                                                    className={`flex items-center ${
+                                                                        isSelected ? "font-bold" : ""
+                                                                    }`}
+                                                                >
+                                                                    <Check
+                                                                        className={`mr-2 h-4 w-4 ${
+                                                                            isSelected
+                                                                                ? "opacity-100"
+                                                                                : "opacity-0"
+                                                                        }`}
+                                                                    />
+                                                                    <span
+                                                                        style={{
+                                                                            color: color.colorHex || "#fff",
+                                                                            fontWeight: isSelected
+                                                                                ? "bold"
+                                                                                : "normal",
+                                                                        }}
+                                                                    >
+                                                    {color.colorName}
+                                                </span>
+                                                                </div>
+                                                            </CommandItem>
+                                                        );
+                                                    })}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+
+                            <div>
+                                <Label>Обирання музики</Label>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            className="w-full justify-between"
+                                        >
+                                            {selectedMusics.length > 0
+                                                ? musicList
+                                                    .filter(m => selectedMusics.includes(m.musicId))
+                                                    .map(m => m.musicName)
+                                                    .join(", ")
+                                                : "Виберіть музику"}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4"/>
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-full p-0">
+                                        <Command>
+                                            <CommandInput placeholder="Пошук музики..."/>
+                                            <CommandEmpty>Пісню не знайдено.</CommandEmpty>
+                                            <CommandList>
+                                                <CommandGroup>
+                                                    {musicList.map((music) => {
+                                                        const isSelected = selectedMusics.includes(music.musicId);
+
+                                                        return (
+                                                            <CommandItem
+                                                                key={music.musicId}
+                                                                onSelect={() => handleMusicToggle(music.musicId)}
+                                                            >
+                                                                <div
+                                                                    className={`flex items-center ${
+                                                                        isSelected ? "font-bold" : ""
+                                                                    }`}
+                                                                >
+                                                                    <Check
+                                                                        className={`mr-2 h-4 w-4 ${
+                                                                            isSelected
+                                                                                ? "opacity-100"
+                                                                                : "opacity-0"
+                                                                        }`}
+                                                                    />
+                                                                    <span>
+                                                                        {music.musicName}
+                                                                    </span>
+                                                                </div>
+                                                            </CommandItem>
+                                                        );
+                                                    })}
                                                 </CommandGroup>
                                             </CommandList>
                                         </Command>
