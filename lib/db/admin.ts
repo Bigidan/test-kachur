@@ -1168,8 +1168,8 @@ export async function addPlaylistMusic(kachurId: number, musicIds: number[]): Pr
 
     // Додаємо нові кольори
     const musicInserts = musicIds.map(musicId => ({
+        musicId,
         kachurId,
-        musicId
     }));
 
     await db.insert(playlistTable).values(musicInserts);
