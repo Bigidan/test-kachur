@@ -176,6 +176,7 @@ export default function KachurTeamPage() {
 
     const fetchKachurMusics = async (kachurId: number) => {
         const music = await getKachurMusic(kachurId);
+        console.log(music);
         setSelectedMusics(music);
     }
 
@@ -195,7 +196,7 @@ export default function KachurTeamPage() {
             : [...selectedMusics, musicId];
 
         setSelectedMusics(newSelectedMusics);
-        console.log(editKachurId, newSelectedMusics);
+
         addPlaylistMusic(editKachurId || 0, newSelectedMusics);
     };
 

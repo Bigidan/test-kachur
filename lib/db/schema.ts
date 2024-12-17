@@ -219,7 +219,7 @@ export const kachurTeamTable = sqliteTable('kachur_team', {
 
 export const playlistTable = sqliteTable('playlists', {
     musicId: integer('music_id').references(() => musicTable.musicId),
-    kachurId: integer('music_id').references(() => kachurTeamTable.kachurId),
+    kachurId: integer('kachur_id').references(() => kachurTeamTable.kachurId),
 });
 
 

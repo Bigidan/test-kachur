@@ -6,7 +6,8 @@ import {
     animeDubDirectorTable,
     animeEditingTable,
     animeEpisodeTable,
-    animeGenreTable, animePopularityTable,
+    animeGenreTable,
+    animePopularityTable,
     animeSoundTable,
     animeSourceTable,
     animeStatusTable,
@@ -17,13 +18,19 @@ import {
     animeVideoEditingTable,
     animeVocalsTable,
     animeVoiceActorsTable,
-    characterTable, colorsTable,
+    characterTable,
+    colorsTable,
     directorTable,
-    episodeTable, filesTable,
-    genreTable, kachurTeamTable,
-    memberTable, musicTable, playlistTable,
+    episodeTable,
+    filesTable,
+    genreTable,
+    kachurTeamTable,
+    memberTable,
+    musicTable,
+    playlistTable,
     popularityTable,
-    roleTable, teamColorTable,
+    roleTable,
+    teamColorTable,
     userTable
 } from "@/lib/db/schema";
 import {and, eq, like, SQL} from "drizzle-orm";
@@ -1162,7 +1169,7 @@ export async function deleteMusic(musicId: number): Promise<void> {
 }
 
 
-export async function addPlaylistMusic(kachurId: number, musicIds: number[]): Promise<void> {
+export async function addPlaylistMusic(kachurId: number, musicIds: number[]) {
     // Видаляємо попередні кольори
     await db.delete(playlistTable).where(eq(playlistTable.kachurId, kachurId));
 
@@ -1172,7 +1179,7 @@ export async function addPlaylistMusic(kachurId: number, musicIds: number[]): Pr
         kachurId,
     }));
 
-    await db.insert(playlistTable).values(musicInserts);
+    return db.insert(playlistTable).values(musicInserts).returning({insertedId: playlistTable.musicId});
 }
 
 export async function getKachurMusic(kachurId: number): Promise<number[]> {
