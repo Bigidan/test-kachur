@@ -12,9 +12,11 @@ const INITIAL_ANIME_LIMIT = 9;
 
 const PopAnimeComponent = ({
     searchQuery,
+    selectedGenres = [],
     infiniteScroll = true
 }: {
     searchQuery: string,
+    selectedGenres?: number[],
     infiniteScroll?: boolean
 }) => {
     const [data, setData] = useState<{animeId: number, nameUkr: string, episodesExpected: number | null, headerImage: string | null, statusName: string | null, statusId: number | null, existedEpisodes: number}[]>([]);
@@ -27,7 +29,7 @@ const PopAnimeComponent = ({
     const fetchInitialData = useCallback(async () => {
         setLoading(true);
         try {
-            const result = await getPopularAnimeBySearch(searchQuery, INITIAL_ANIME_LIMIT, 0);
+            const result = await getPopularAnimeBySearch(searchQuery, INITIAL_ANIME_LIMIT, 0, selectedGenres);
             setData(result);
             setHasMoreAnime(result.length === INITIAL_ANIME_LIMIT);
         } catch (error) {
@@ -35,7 +37,7 @@ const PopAnimeComponent = ({
         } finally {
             setLoading(false);
         }
-    }, [searchQuery]);
+    }, [searchQuery, selectedGenres]);
 
     const loadMoreAnime = useCallback(async () => {
         const nextPage = page + 1;
@@ -43,7 +45,8 @@ const PopAnimeComponent = ({
             const result = await getPopularAnimeBySearch(
                 searchQuery,
                 INITIAL_ANIME_LIMIT,
-                (nextPage - 1) * INITIAL_ANIME_LIMIT
+                (nextPage - 1) * INITIAL_ANIME_LIMIT,
+                selectedGenres
             );
 
             if (result.length > 0) {
@@ -56,7 +59,7 @@ const PopAnimeComponent = ({
         } catch (error) {
             console.error("Error loading more anime:", error);
         }
-    }, [searchQuery, page]);
+    }, [searchQuery, selectedGenres, page]);
 
     useEffect(() => {
         fetchInitialData();

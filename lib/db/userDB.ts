@@ -21,10 +21,10 @@ import {
     directorTable,
     episodeTable,
     genreTable, kachurTeamTable,
-    memberTable, musicTable, playlistTable, roleTable, teamColorTable,
+    memberTable, musicTable, playlistTable, relatedAnimeTable, roleTable, teamColorTable,
     userTable
 } from "@/lib/db/schema";
-import {and, desc, eq, isNotNull, isNull, like, ne, or, sql} from "drizzle-orm";
+import {and, desc, eq, inArray, isNotNull, isNull, like, ne, or, sql} from "drizzle-orm";
 import {hashPassword, verifyPassword} from "@/lib/auth/jwt";
 import {AnimeData, CommentsType} from "@/components/types/anime-types";
 import {User as UserType, User} from "@/components/types/user";
@@ -283,22 +283,31 @@ export async function getAllEpisodesForAnime(searchAnimeId: number){
 export async function getCharactersByActorId(searchUserId: number, searchFromAnime: number) {
     return db.select({
         name: characterTable.name,
-        animeId: characterTable.animeId,
+        animeId: sql<number>`CASE 
+            WHEN ${relatedAnimeTable.animeChildId} IS NOT NULL THEN ${relatedAnimeTable.animeChildId}
+            ELSE ${characterTable.animeId} 
+        END`.as('animeId'),
         image: characterTable.image,
         popularityId: animePopularityTable.popularityId,
         characterId: characterTable.characterId,
         voiceActorId: characterTable.voiceActorId,
         animeName: animeTable.nameUkr,
-
     }).from(characterTable)
-        .where(eq(characterTable.voiceActorId, searchUserId))
+        // Ліва джойн таблиці аніме
         .leftJoin(animeTable, eq(animeTable.animeId, characterTable.animeId))
+        // Ліва джойн для популярності
         .leftJoin(animePopularityTable, eq(animePopularityTable.popularityId, animeTable.animePopularityId))
+        // Ліва джойн таблиці пов'язаних аніме
+        .leftJoin(relatedAnimeTable, and(
+            eq(relatedAnimeTable.animeChildId, searchFromAnime),
+            eq(characterTable.animeId, relatedAnimeTable.animeParentId),
+        ))
+        .where(eq(characterTable.voiceActorId, searchUserId))
         .orderBy(
-            // Спочатку сортуємо, якщо animeId відповідає searchFromAnime
-            sql`CASE WHEN ${characterTable.animeId} = ${searchFromAnime} THEN 0 ELSE 1 END`,
-            // Далі сортуємо за popularityId
-            characterTable.popularityId,
+            sql`CASE 
+                WHEN ${characterTable.animeId} = ${searchFromAnime} OR ${relatedAnimeTable.animeChildId} = ${searchFromAnime} 
+                THEN 0 ELSE 1 
+            END`,
             animePopularityTable.order,
         )
         .limit(8);
@@ -312,39 +321,52 @@ export async function getArtByUser(searchUserId: number) {
 export async function getPopularAnimeBySearch(
     searchQuery: string,
     limit: number = 9,
-    offset: number = 0
+    offset: number = 0,
+    genreIds: number[] = []
 ) {
-    return db.select({
-        animeId: animeTable.animeId,
-        nameUkr: animeTable.nameUkr,
-        episodesExpected: animeTable.episodesExpected,
-        headerImage: animeTable.headerImage,
+    let baseQuery = db
+        .select({
+            animeId: animeTable.animeId,
+            nameUkr: animeTable.nameUkr,
+            episodesExpected: animeTable.episodesExpected,
+            headerImage: animeTable.headerImage,
 
-        statusName: animeStatusTable.statusName,
-        statusId: animeTable.statusId,
+            statusName: animeStatusTable.statusName,
+            statusId: animeTable.statusId,
 
-        existedEpisodes: db.$count(animeEpisodeTable, eq(animeEpisodeTable.animeId, animeTable.animeId)),
-    })
+            existedEpisodes: db.$count(animeEpisodeTable, eq(animeEpisodeTable.animeId, animeTable.animeId)),
+        })
         .from(animeTable)
         .leftJoin(animeStatusTable, eq(animeStatusTable.statusId, animeTable.statusId))
-        .leftJoin(animePopularityTable, eq(animePopularityTable.popularityId, animeTable.animePopularityId))
-        .where(
-            and(
-                or(
-                    (like(animeTable.nameUkr, `%${searchQuery}%`)),
-                    (like(animeTable.nameEng, `%${searchQuery}%`))
-                ),
-                ne(animeTable.isHidden, true)
-            )
-        )
-        .orderBy(
-            animePopularityTable.order,
-            animeTable.statusId,
-        )
+        .leftJoin(animePopularityTable, eq(animePopularityTable.popularityId, animeTable.animePopularityId));
+
+    // Base where conditions
+    let whereConditions = and(
+        or(
+            like(animeTable.nameUkr, `%${searchQuery}%`),
+            like(animeTable.nameEng, `%${searchQuery}%`)
+        ),
+        ne(animeTable.isHidden, true)
+    );
+
+    // Фільтр за жанрами, якщо передано genreIds
+    if (genreIds.length > 0) {
+        baseQuery = baseQuery
+            .innerJoin(animeGenreTable, eq(animeGenreTable.animeId, animeTable.animeId));
+
+        // Combine genre filter with existing conditions
+        whereConditions = and(
+            whereConditions,
+            inArray(animeGenreTable.genreId, genreIds)
+        );
+    }
+
+    return baseQuery
+        .where(whereConditions)
+        .orderBy(animePopularityTable.order, animeTable.statusId)
         .limit(limit)
         .offset(offset);
 }
-
 
 export async function getComments(
     animeId: number,
@@ -662,4 +684,27 @@ export async function getKachurPlaylist(kachurId: number) {
     }).from(playlistTable)
         .where(eq(playlistTable.kachurId, kachurId))
         .leftJoin(musicTable, eq(musicTable.musicId, playlistTable.musicId));
+}
+
+export async function getAllGenres(){
+    return db.select().from(genreTable);
+}
+
+export async function getUserFavorites(userId: number) {
+    return db.select({
+        animeId: animeTable.animeId,
+        nameUkr: animeTable.nameUkr,
+        headerImage: animeTable.headerImage,
+        statusId: animeTable.statusId,
+        statusName: animeStatusTable.statusName,
+    }).from(animeFavorite)
+        .where(eq(animeFavorite.userId, userId))
+        .leftJoin(animeTable, eq(animeTable.animeId, animeFavorite.animeId))
+        .leftJoin(animeStatusTable, eq(animeStatusTable.statusId, animeTable.statusId));
+}
+
+export async function setNewUserImage(fileUrl: string, userId: number) {
+    return db.update(userTable)
+        .set({image: fileUrl})
+        .where(eq(userTable.userId, userId))
 }

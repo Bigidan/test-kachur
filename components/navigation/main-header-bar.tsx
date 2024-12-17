@@ -10,7 +10,7 @@ import {
     UserPlus,
     Users,
     Ellipsis,
-    Search, SlidersHorizontal,
+    Search,
 } from "lucide-react"
 
 import { User as UserType } from "@/components/types/user";
@@ -85,12 +85,9 @@ const MainHeaderBar = () => {
                                        value={searchQuery}
                                        onChange={(e) => setSearchQuery(e.target.value)}
                                        className="bg-transparent border-transparent outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"/>
-                                <Button variant="ghost" size="icon">
-                                    <SlidersHorizontal/>
-                                </Button>
                             </div>
                             <div>
-                                <PopAnimeComponent searchQuery={searchQuery} infiniteScroll={false}/>
+                                <PopAnimeComponent searchQuery={searchQuery} infiniteScroll={false} selectedGenres={[]}/>
                             </div>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -202,7 +199,7 @@ const MainHeaderBar = () => {
                             <Button asChild variant="outline">
                                 <Link href="/register">Зареєструватися</Link>
                             </Button>
-                        </div>
+                            </div>
                         }
                     </div>
                     {/*<ModeToggle/>*/}

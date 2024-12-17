@@ -92,7 +92,6 @@ export default async function WatchPage({
 
     return (
         <div className="mx-auto flex justify-center" style={{ maxWidth: '70%' }}>
-            {(
 
                 <div className="flex flex-col w-full justify-center">
                     <div className="grid gap-10 w-full" style={{gridTemplateColumns: '3fr 9fr'}}>
@@ -270,7 +269,6 @@ export default async function WatchPage({
                         animeId={Number(watchId)}
                     />
                 </div>
-            )}
         </div>
     );
 };

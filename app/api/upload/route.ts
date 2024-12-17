@@ -16,7 +16,9 @@ const ALLOWED_FILE_TYPES = [
     'image/gif',
     'video/mp4',
     'video/webm',
-    'video/ogg'
+    'video/ogg',
+    'audio/mpeg',
+    'audio/ogg',
 ]; // Дозволені формати для зображень та відео
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads'); // Директорія для збереження файлів
 
