@@ -195,6 +195,7 @@ export default function KachurTeamPage() {
             : [...selectedMusics, musicId];
 
         setSelectedMusics(newSelectedMusics);
+        console.log(editKachurId, newSelectedMusics);
         addPlaylistMusic(editKachurId || 0, newSelectedMusics);
     };
 

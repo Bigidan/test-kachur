@@ -1164,7 +1164,7 @@ export async function deleteMusic(musicId: number): Promise<void> {
 
 export async function addPlaylistMusic(kachurId: number, musicIds: number[]): Promise<void> {
     // Видаляємо попередні кольори
-    await db.delete(playlistTable).where(eq(teamColorTable.kachurId, kachurId));
+    await db.delete(playlistTable).where(eq(playlistTable.kachurId, kachurId));
 
     // Додаємо нові кольори
     const musicInserts = musicIds.map(musicId => ({
