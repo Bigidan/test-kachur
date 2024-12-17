@@ -19,7 +19,6 @@ import CommentsSection from "@/components/watch/comment-sectio"
 import NotFoundK from "@/app/(main)/not-found";
 import {AnimeFavoriteButton} from "@/components/watch/anime-favorite-button";
 
-
 export default async function WatchPage({
     params,
 }: {
