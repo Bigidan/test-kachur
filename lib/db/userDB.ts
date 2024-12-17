@@ -21,7 +21,7 @@ import {
     directorTable,
     episodeTable,
     genreTable, kachurTeamTable,
-    memberTable, playlistTable, roleTable, teamColorTable,
+    memberTable, musicTable, playlistTable, roleTable, teamColorTable,
     userTable
 } from "@/lib/db/schema";
 import {and, desc, eq, isNotNull, isNull, like, ne, or, sql} from "drizzle-orm";
@@ -653,5 +653,13 @@ export async function getKachurColors(kachurId: number) {
 }
 
 export async function getKachurPlaylist(kachurId: number) {
-    return db.select().from(playlistTable).where(eq(playlistTable.kachurId, kachurId));
+    return db.select({
+        musicId: musicTable.musicId,
+        musicName: musicTable.musicName,
+        musicDescription: musicTable.musicDescription,
+        musicImage: musicTable.musicImage,
+        musicUrl: musicTable.musicUrl,
+    }).from(playlistTable)
+        .where(eq(playlistTable.kachurId, kachurId))
+        .leftJoin(musicTable, eq(musicTable.musicId, playlistTable.musicId));
 }

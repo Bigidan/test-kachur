@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import React, { useEffect, useState } from "react";
 import {notFound, useParams} from "next/navigation";
-import {getCharactersByActorId, getKachurColors, getKachurTeamById} from "@/lib/db/userDB";
+import {getCharactersByActorId, getKachurColors, getKachurPlaylist, getKachurTeamById} from "@/lib/db/userDB";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -15,7 +15,9 @@ import {
     DialogTitle,
     DialogTrigger
 } from "@/components/ui/dialog";
-import {Textarea} from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {BsPlayFill} from "react-icons/bs";
 
 interface DubberData {
     kachurTeamTable: {
@@ -64,10 +66,21 @@ type ColorsType = {
     }
 }
 
+type MusicType = {
+    musicId: number | null;
+    musicName: string | null;
+    musicDescription: string | null;
+    musicImage: string | null;
+    musicUrl: string | null;
+}
+
 export default function TeamUserId() {
     const params = useParams();
+
     const [dubberData, setDubberData] = useState<DubberData | null>(null); // Стан для збереження даних
     const [colorData, setColorData] = useState<ColorsType[]>([]); // Стан для збереження даних
+    const [musicData, setMusicData] = useState<MusicType[]>([]); // Стан для збереження даних
+
     const [loading, setLoading] = useState<boolean>(true); // Стан для відображення завантаження
     const [error, setError] = useState<string | null>(null); // Стан для обробки помилок
 
@@ -108,10 +121,16 @@ export default function TeamUserId() {
                         .then((characterData) => {
                             setProfileData(characterData);
                         });
+
                     getKachurColors(userId)
                         .then((colorsData) => {
                             setColorData(colorsData);
-                        })
+                        });
+
+                    getKachurPlaylist(userId)
+                        .then((musicData) => {
+                            setMusicData(musicData);
+                        });
                 }
 
             })
@@ -288,8 +307,29 @@ export default function TeamUserId() {
                             className="bg-gradient-to-b from-[#B90000] to-[#730000] font-extrabold rounded-md h-auto flex justify-center items-center self-center px-2 py-1.5 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]">
                             <div>{dubberData.memberNickname?.toUpperCase()}’S PLAYLIST</div>
                         </div>
-                        <div className="p-6 grid-cols-2">
+                        <div className="p-6 max-h-96 grid grid-cols-2">
+                            {
+                                musicData?.map((music: MusicType, index) => {
+                                    return (
+                                        <div key={index}>
+                                            <div className="flex flex-row gap-2">
+                                                <Button variant="link" size="icon" className="relative">
+                                                    <Avatar>
+                                                        <AvatarImage src={music.musicImage || ""}></AvatarImage>
+                                                        <AvatarFallback></AvatarFallback>
+                                                    </Avatar>
+                                                    <BsPlayFill style={{ width: "22px", height: "22px" }} className="absolute ml-[1.5px] top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]" />
+                                                </Button>
+                                                <div className="flex flex-col text-nowrap font-bold text-[15px]">
+                                                    {music.musicName}
+                                                    <div className="font-semibold text-[10px]">{music.musicDescription}</div>
+                                                </div>
+                                            </div>
 
+                                        </div>
+                                    )
+                                })
+                            }
                         </div>
                     </div>
                 </div>
